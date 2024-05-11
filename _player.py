@@ -8,7 +8,9 @@ class Client:
         pass
 
 class Player:
+    
     def __init__(self,id):
         self.hand = [Pile(str(id)+"-"+str(i),8) for i in range(5)]
-        self.cards = []
+        self.side_pile = Pile((str(id) + "side"),36) 
+        self.cards = Pile(str(id)+"cards",52)
         self.id = id

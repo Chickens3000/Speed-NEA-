@@ -44,18 +44,37 @@ class Pile:
             print("Stack Overflow:",self.name)
             return False
     
-    def pop(self):
+    def _pop(self):
         if self.stack_pointer >= 0:
             self.stack_pointer -= 1
             card = self.contents[self.stack_pointer + 1]
+            self.contents[self.stack_pointer + 1] = ""
             return card
         else:
-            return None
+            return False
     
     def peek(self):
       if self.stack_pointer >= 0:
         card = self.contents[self.stack_pointer]
         return card
+
+    def push_all(self, cards: list):
+        if self.stack_pointer < self.max - len(cards):
+            self.stack_pointer += 1
+            self.contents[self.stack_pointer:(self.stack_pointer +len(cards))] = cards
+            self.stack_pointer =self.stack_pointer +(len(cards)-1)
+        else:
+            print("Stack Overflow:",self.name)
+            return False
+        
+    def pop_all(self):
+        if self.stack_pointer >= 0:
+            cards = self.contents[0:(self.stack_pointer+1)]
+            self.contents[0:(self.stack_pointer+1)] = ["" for Elements in range(self.stack_pointer+1)]
+            self.stack_pointer = -1
+            return cards
+        else:
+            return False
 
 class Deck(Pile):
     def create_deck(self):
