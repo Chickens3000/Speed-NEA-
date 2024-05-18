@@ -1,9 +1,16 @@
-class Card:
+import pygame
+
+class Card(pygame.sprite.Sprite):
     def __init__(self, code:tuple):
+        super(Card, self).__init__()
         self.code = code
         self.name = self.create_name()
-        self.image = self.name + ".png"
+        self.image = "./images/"+self.name + ".png"
         self.seen = True
+
+        self.surf = pygame.image.load(self.image)
+        self.surf= pygame.transform.scale(self.surf, (160,240)).convert()
+        self.rect = self.surf.get_rect()
 
     def create_name(self):
         name = ""
@@ -76,9 +83,3 @@ class Pile:
         else:
             return False
 
-class Deck(Pile):
-    def create_deck(self):
-        suits =["S","H","D","C"]
-        for suit in suits:
-            for i in range(1,14):
-                self.push(Card((i,suit)))
