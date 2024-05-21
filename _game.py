@@ -42,6 +42,5 @@ class Game():
             for stack in player.hand:
                 player.cards.push_all(stack.pop_all())
 
-    def play(self,p,data):
-        self.players[p].inputs.Enqueue(data)
-        print(self.players[p].inputs.Contents)
+    def update(self,p: Player,data: str):
+        print(p.id, data)

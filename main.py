@@ -19,7 +19,7 @@ bg = pygame.transform.scale(bg, (width,height))
 pygame.display.set_caption("Game")
 
 all_sprites = pygame.sprite.Group()
-online = True
+online = False
 
 
 class Deck(Pile):
@@ -65,7 +65,7 @@ def main():
                     if online == True:
                         n.send(event.unicode)
                     else:
-                        player.inputs.Enqueue(event.unicode)
+                       game.update(player,event.unicode)
             elif event.type == QUIT:
                 run = False
         
