@@ -1,4 +1,8 @@
 import pygame
+from pygame.locals import (
+    RLEACCEL
+)
+MOVECARD= pygame.USEREVENT + 1
 
 class Card(pygame.sprite.Sprite):
     def __init__(self, code:tuple):
@@ -7,10 +11,13 @@ class Card(pygame.sprite.Sprite):
         self.name = self.create_name()
         self.image = "./images/"+self.name + ".png"
         self.seen = True
-
         self.surf = pygame.image.load(self.image)
-        self.surf= pygame.transform.scale(self.surf, (160,240)).convert()
+        self.surf= pygame.transform.scale(self.surf, (144,209)).convert()
+
         self.rect = self.surf.get_rect()
+
+        self.pos = (0,0)
+        self.target_pos = (0,0)
 
     def create_name(self):
         name = ""
@@ -37,11 +44,14 @@ class Card(pygame.sprite.Sprite):
         return name
         
 class Pile:
-    def __init__(self,name,max) -> None:
+
+    def __init__(self,name,max,pos) -> None:
         self.stack_pointer = -1
         self.max = max
         self.contents = ["" for Elements in range(self.max)]
         self.name = name
+        self.pos = pos
+
 
     def push(self, card: tuple):
         if self.stack_pointer < self.max -1:
