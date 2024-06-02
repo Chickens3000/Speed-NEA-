@@ -8,19 +8,22 @@ class Game():
         self.ready = False
         self.players = [Player(0),Player(1)]
         self.center_piles = [Pile("center1",52,(400,360)),Pile("center2",52,(800,360))]
-        self.online = False
-    
-    def start_game(self,deck):
-        deck.create_deck()
-        random.shuffle(deck.contents)
-        self.players[0].cards.push_all(deck.contents[0:26])
-        self.players[1].cards.push_all(deck.contents[26:53])
+        self.deck = Deck("deck",52,(0,0))
+        self.moving_sprites = pygame.sprite.Group() 
+        self.all_sprites = pygame.sprite.Group() 
+
+    def create_sprites(self):
+        self.all_sprites = self.deck.create_deck(self.all_sprites)
+
+    def start_game(self):
+        random.shuffle(self.deck.contents)
+        self.players[0].cards.push_all(self.deck.contents[0:26])
+        self.players[1].cards.push_all(self.deck.contents[26:53])
         for player in self.players:
             for i in range(player.cards.stack_pointer +1 ):
                 card = player.cards.contents[i]
                 card.pos = player.cards.pos
-                event = pygame.event.Event(MOVECARD, move = (card,card.pos) )
-                pygame.event.post(event)
+                self.moving_sprites.add(card)
 
     def round_setup(self):
         for player in self.players:
@@ -38,14 +41,12 @@ class Game():
         return start + t * (end - start)
 
     def move_card(self,start:Pile,end:Pile):
-        print(start.name,end.name)
-        print(start.contents, end.contents) #Subroutine added to make animation easier
+        #Subroutine added to make animation easier
         try:
             card = start._pop()
             end.push(card)
             card.pos = end.pos
-            event = pygame.event.Event(MOVECARD, move = (card,card.pos) )
-            pygame.event.post(event)
+            self.moving_sprites.add(card)
         except:
             print("Empty!")
         

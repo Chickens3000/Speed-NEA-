@@ -2,22 +2,28 @@ import pygame
 from pygame.locals import (
     RLEACCEL
 )
-MOVECARD= pygame.USEREVENT + 1
+
+class Image():
+    def __init__(self,name):
+        self.name = name
+        self.image = "./images/"+self.name + ".png"
+        self.seen = True
+        self.surf = pygame.image.load(self.image)
+        self.surf= pygame.transform.scale(self.surf, (144,209)).convert()
+        self.rect = self.surf.get_rect()
 
 class Card(pygame.sprite.Sprite):
     def __init__(self, code:tuple):
         super(Card, self).__init__()
         self.code = code
         self.name = self.create_name()
-        self.image = "./images/"+self.name + ".png"
-        self.seen = True
-        self.surf = pygame.image.load(self.image)
-        self.surf= pygame.transform.scale(self.surf, (144,209)).convert()
-
-        self.rect = self.surf.get_rect()
+        # self.image = "./images/"+self.name + ".png"
+        # self.seen = True
+        # self.surf = pygame.image.load(self.image)
+        # self.surf= pygame.transform.scale(self.surf, (144,209)).convert()
+        # self.rect = self.surf.get_rect()
 
         self.pos = (0,0)
-        self.target_pos = (0,0)
 
     def create_name(self):
         name = ""
@@ -93,3 +99,13 @@ class Pile:
         else:
             return False
 
+class Deck(Pile):
+    def create_deck(self,all_sprites):
+        suits =["S","H","D","C"]
+        for suit in suits:
+            for i in range(1,14):
+                card = Card((i,suit))
+                self.push(card)
+                all_sprites.add(card)      
+        return all_sprites
+    

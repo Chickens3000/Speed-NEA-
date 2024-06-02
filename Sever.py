@@ -2,6 +2,8 @@ import socket
 from _thread import *
 import pickle
 from _game import Game
+import pygame
+
 
 server = "192.168.1.118"
 port = 5555
@@ -28,19 +30,24 @@ def threaded_client(conn, p, gameId):
     reply = ""
     while True:
         try:
-            data = conn.recv(4096).decode()
+            data = conn.recv(2048*16).decode()
 
             if gameId in games:
                 game = games[gameId]
-
+                
                 if not data:
                     break
                 else:
-                    if data == "reset":
-                        game.resetWent()
+                    if data == "start":
+                        game.create_sprites()
+                        game.start_game()
                     elif data != "get":
                         game.update(game.players[p], data)
-                    conn.sendall(pickle.dumps(game))
+                    try:
+                        conn.sendall(pickle.dumps(game))
+                    except Exception as E:
+                        print(E)
+                
             else:
                 break
         except:
