@@ -2,8 +2,6 @@ import socket
 from _thread import *
 import pickle
 from _game import Game
-import pygame
-
 
 server = "192.168.1.118"
 port = 5555
