@@ -16,7 +16,7 @@ class Network:
     def connect(self):
         try:
             self.client.connect(self.addr)
-            return pickle.loads(self.client.recv(2048*16)) # might change this to return the player object
+            return pickle.loads(self.client.recv(2048*16))
         except:
             pass
 
