@@ -7,10 +7,11 @@ class Game():
         self.id = id
         self.ready = False
         self.players = [Player(0),Player(1)]
-        self.center_piles = [Pile("center1",52,(400,360)),Pile("center2",52,(800,360))]
+        self.center_piles = [Pile("center1",52,(450,230)),Pile("center2",52,(606,230))]
         self.deck = Deck("deck",52,(0,0))
         self.moving_sprites = pygame.sprite.Group() 
-        self.all_sprites = pygame.sprite.Group() 
+        self.all_sprites = pygame.sprite.Group()
+
 
     def create_sprites(self):
         self.all_sprites = self.deck.create_deck(self.all_sprites)
@@ -24,17 +25,15 @@ class Game():
                 card = player.cards.contents[i]
                 card.pos = player.cards.pos
                 self.moving_sprites.add(card)
+        self.round_setup()
+        self.flip_cards()
 
     def round_setup(self):
         for player in self.players:
             for i in range(0,5):
                 for x in range(5-i):
-                   card = player.cards._pop()
-                   if card == False:
-                       break
-                   player.hand[i].push(card)
-            cards = player.cards.pop_all()    
-            player.side_pile.push_all(cards)
+                   self.move_card(player.cards,player.hand[i])
+            self.move_all(player.cards,player.side_pile)
 
     
     def lerp(self, start, end, t):
@@ -42,14 +41,22 @@ class Game():
 
     def move_card(self,start:Pile,end:Pile):
         #Subroutine added to make animation easier
-        try:
             card = start._pop()
+            if card == False:
+                print("Empty!")
+            else:
+                end.push(card)
+                card.pos = end.pos
+                self.moving_sprites.add(card)
+
+    def move_all(self,start:Pile,end:Pile):
+        card = start._pop()
+        while card != False:
             end.push(card)
             card.pos = end.pos
             self.moving_sprites.add(card)
-        except:
-            print("Empty!")
-        
+            card = start._pop()
+
     def flip_cards(self):
         self.move_card(self.players[0].side_pile,self.center_piles[0])
         self.move_card(self.players[1].side_pile,self.center_piles[1])

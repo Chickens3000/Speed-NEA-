@@ -17,7 +17,7 @@ screen = pygame.display.set_mode((width, height))
 bg = pygame.image.load("./images/backround.jpg")
 bg = pygame.transform.scale(bg, (width,height))
 pygame.display.set_caption("Game")
-online = True
+online = False
 images = {}
 def lerp(start, end, t): # change this
     return start + t * (end - start)
@@ -74,24 +74,24 @@ def main_online():
     try:
         game = n.send("get")
     except:
-        print("Couldn't get game1 ")
+        print("Couldn't get game ")
         run = False
     try:
         game = n.send("start")
+        for card in game.deck.contents:
+            images[card.name] = Image(card.name)
     except:
-        print("Couldn't get game 2")
-        run = False
-    for card in game.deck.contents:
-        images[card.name] = Image(card.name)
+        print("Couldn't get game")
+        run = False 
+
     while run:
         clock.tick(60)
         try:
             game = n.send("get")
         except:
             run = False
-            print("Couldn't get game 3")
+            print("Couldn't get game")
             break
-       
         for event in pygame.event.get():
 
             if event.type == KEYDOWN:
