@@ -7,16 +7,27 @@ class Image():
     def __init__(self,name):
         self.name = name
         self.image = "./images/"+self.name + ".png"
-        self.seen = True
+        self.seen = False
         self.surf = pygame.image.load(self.image)
         self.surf= pygame.transform.scale(self.surf, (144,209)).convert()
         self.rect = self.surf.get_rect()
+
+        self.back_surf= pygame.image.load("./images/back.png")
+        self.back_surf= pygame.transform.scale(self.back_surf, (144,209)).convert()
+        self.back_rect = self.back_surf.get_rect()
+
+    def _image(self):
+        if self.seen == True:
+            return self.surf, self.rect
+        else:
+            return self.back_surf, self.back_rect
 
 class Card(pygame.sprite.Sprite):
     def __init__(self, code:tuple):
         super(Card, self).__init__()
         self.code = code
         self.name = self.create_name()
+        self.faced_up = False
         # self.image = "./images/"+self.name + ".png"
         # self.seen = True
         # self.surf = pygame.image.load(self.image)
@@ -59,10 +70,11 @@ class Pile:
         self.pos = pos
 
 
-    def push(self, card: tuple):
+    def push(self, card: tuple,all_sprites):
         if self.stack_pointer < self.max -1:
             self.stack_pointer += 1
             self.contents[self.stack_pointer] = card
+            all_sprites.change_layer(sprite = card,new_layer=self.stack_pointer)
         else:
             print("Stack Overflow:",self.name)
             return False
@@ -76,10 +88,12 @@ class Pile:
         else:
             return False
     
-    def peek(self):
+    def _peek(self):
       if self.stack_pointer >= 0:
-        card = self.contents[self.stack_pointer]
+        card:Card = self.contents[self.stack_pointer]
         return card
+      else:
+          return False
 
     def push_all(self, cards: list):
         if self.stack_pointer < self.max - len(cards):
@@ -105,7 +119,7 @@ class Deck(Pile):
         for suit in suits:
             for i in range(1,14):
                 card = Card((i,suit))
-                self.push(card)
-                all_sprites.add(card)      
+                all_sprites.add(card)
+                self.push(card,all_sprites)  
         return all_sprites
     

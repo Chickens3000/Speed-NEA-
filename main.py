@@ -2,7 +2,7 @@ import pygame
 from network import Network
 from _game import * 
 from _cards import *
-pygame.init()
+pygame.init() 
 pygame.font.init()
 pygame.display.init()
 from pygame.locals import (
@@ -23,18 +23,19 @@ def lerp(start, end, t): # change this
     return start + t * (end - start)
 
 def move_towards(game:Game , card, target_pos):
+    surf, rect = card._image()
     speed = 40
-    dist_x = target_pos[0] - card.rect.x
-    dist_y = target_pos[1] - card.rect.y
+    dist_x = target_pos[0] - rect.x
+    dist_y = target_pos[1] - rect.y
     distance = (dist_x ** 2 + dist_y ** 2) ** 0.5
     # Check if the sprite is close enough to the target
     if distance < speed:
-        card.rect.topleft = target_pos
+        rect.topleft = target_pos
         game.moving_sprites.remove(card)  # Snap to the target position
     else:
         # Move the sprite incrementally
-        card.rect.x = lerp(card.rect.x, target_pos[0], speed / distance)
-        card.rect.y = lerp(card.rect.y, target_pos[1], speed / distance)
+        rect.x = lerp(rect.x, target_pos[0], speed / distance)
+        rect.y = lerp(rect.y, target_pos[1], speed / distance)
 
 def main():
     run = True
@@ -48,7 +49,6 @@ def main():
     while run:
         clock.tick(60)
         for event in pygame.event.get():
-
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     run = False
@@ -61,9 +61,9 @@ def main():
         for entity in game.moving_sprites:
             move_towards(game,images[entity.name],entity.pos)
         for entity in game.all_sprites:
-            screen.blit(images[entity.name].surf, images[entity.name].rect)
+            images[entity.name].seen = entity.faced_up
+            screen.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
         
-
         pygame.display.flip()
      
 def main_online():
@@ -74,10 +74,10 @@ def main_online():
     try:
         game = n.send("get")
     except:
-        print("Couldn't get game ")
+        print("Couldn't get game 1")
         run = False
+    
     try:
-        game = n.send("start")
         for card in game.deck.contents:
             images[card.name] = Image(card.name)
     except:
@@ -90,7 +90,7 @@ def main_online():
             game = n.send("get")
         except:
             run = False
-            print("Couldn't get game")
+            print("Couldn't get game 3")
             break
         for event in pygame.event.get():
 
@@ -106,14 +106,14 @@ def main_online():
         for entity in game.moving_sprites:
             move_towards(game,images[entity.name],entity.pos)
         for entity in game.all_sprites:
-            screen.blit(images[entity.name].surf, images[entity.name].rect)
-        
+            images[entity.name].seen = entity.faced_up
+            screen.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
 
+        
+        
         pygame.display.flip()
 
 if online == True:
     main_online()
 else:
     main()
-
-#Decelerator

@@ -10,8 +10,8 @@ class Game():
         self.center_piles = [Pile("center1",52,(450,230)),Pile("center2",52,(606,230))]
         self.deck = Deck("deck",52,(0,0))
         self.moving_sprites = pygame.sprite.Group() 
-        self.all_sprites = pygame.sprite.Group()
-
+        self.all_sprites = pygame.sprite.LayeredUpdates()
+        self.flip_ready = [False,True]
 
     def create_sprites(self):
         self.all_sprites = self.deck.create_deck(self.all_sprites)
@@ -33,6 +33,7 @@ class Game():
             for i in range(0,5):
                 for x in range(5-i):
                    self.move_card(player.cards,player.hand[i])
+                player.hand[i]._peek().faced_up = True
             self.move_all(player.cards,player.side_pile)
 
     
@@ -45,14 +46,14 @@ class Game():
             if card == False:
                 print("Empty!")
             else:
-                end.push(card)
+                end.push(card, self.all_sprites)
                 card.pos = end.pos
                 self.moving_sprites.add(card)
 
     def move_all(self,start:Pile,end:Pile):
         card = start._pop()
         while card != False:
-            end.push(card)
+            end.push(card, self.all_sprites)
             card.pos = end.pos
             self.moving_sprites.add(card)
             card = start._pop()
@@ -60,6 +61,8 @@ class Game():
     def flip_cards(self):
         self.move_card(self.players[0].side_pile,self.center_piles[0])
         self.move_card(self.players[1].side_pile,self.center_piles[1])
+        for pile in self.center_piles:
+            pile._peek().faced_up = True
 
     def end_round(self): # Assuming slammed pile has allready been added to cards
         for player in self.players:
@@ -70,16 +73,93 @@ class Game():
     def update(self,p: Player,data: str):
         player = p
         if data == "q":
-            self.move_card(player.cards,player.hand[0])
-        if data == "w":
-            self.move_card(player.cards,player.hand[1])
-        if data == "e":
-            self.move_card(player.cards,player.hand[2])
-        if data == "r":
-            self.move_card(player.cards,player.hand[3])
-        if data == "g":
-            self.move_card(player.cards,player.hand[4])
+            pile = player.hand[0]
+        elif data == "w":
+            pile = player.hand[1]
+        elif data == "e":
+            pile = player.hand[2]
+        elif data == "r":
+            pile = player.hand[3]
+        elif data == "g":
+            pile = player.hand[4]
+        else:
+            return False            # If input is invalid, end procedure
+        if pile._peek() == False: # If pile is empty, end procedure
+            return False
+        if pile._peek().faced_up == False: #If card is not revealed, reveal card
+            pile._peek().faced_up =True
+            return False
+        for centre_pile in self.center_piles: # if card can be played, play card
+            if self.move_is_valid(pile._peek(),centre_pile._peek()) == True:
+                self.move_card(pile,centre_pile)
+                return False
+        if self.stack(pile,player) != False: 
+            hand  = self.stack(pile,player)
+            while pile._peek() != False and pile._peek().faced_up == True:
+                    self.move_card(pile,hand)
+            return False
+        if self.shift_cards(pile,player) != False:# Moves cards to empty pile if possible 
+            hand  = self.shift_cards(pile,player)
+            while pile._peek() != False and pile._peek().faced_up == True:
+                    self.move_card(pile,hand)
+            return False
+        self.check_for_moves(player)
+
+    def move_is_valid(self,card:Card,top_card:Card):
+        if abs(top_card.code[0] - card.code[0]) == 1 or abs(top_card.code[0] - card.code[0])== 12:
+            return True
+        
+    def stack(self,pile:Pile ,player:Player):
+        for hand in player.hand:
+            top_card = hand._peek()
+            if top_card == False:
+                continue
+            elif pile == hand:
+                continue
+            elif pile._peek().code[0] == top_card.code[0] and top_card.faced_up == True: # This was a fix that can come up in testing
+                return hand
             
+        return False
+
+    def shift_cards(self, pile:Pile, player:Player):
+        count = 0 
+        for i in range(pile.stack_pointer+1):
+            if pile.contents[i].faced_up == True:
+                count+= 1
+        if count == pile.stack_pointer +1:
+            return False
+        for hand in player.hand:
+            if hand._peek() == False:
+                return hand
+        return False
+
+    def check_for_moves(self, player:Player):
+        empty_hand = True
+        for stack in player.hand:
+            if stack._peek() != False:
+                empty_hand == False
+            else:
+                continue
+            for centre_pile in self.center_piles: # if card can be played, return that card
+                if self.move_is_valid(stack._peek(),centre_pile._peek()) == True:
+                    return stack._peek()
+            if stack._peek().faced_up == False: #If card is not revealed, reveal card
+                return stack._peek()
+            if self.stack(stack,player) != False: 
+                return stack._peek()
+            if self.shift_cards(stack,player) != False:# Moves cards to empty pile if possible 
+                return stack._peek()
+        
+        #If empty_hand == True, SLAM!!!!!!!!!!!!!!!
+        self.flip_ready[player.id] = True
+        if self.flip_ready[abs(player.id-1)] == True:
+            self.flip_cards()
+        
+
+
+        
+
+
 
 class Queue:
     # Constructor
