@@ -22,7 +22,7 @@ images = {}
 def lerp(start, end, t): # change this
     return start + t * (end - start)
 
-def move_towards(game:Game , card, target_pos):
+def move_towards(game:Game , card:Image, target_pos):
     surf, rect = card._image()
     speed = 40
     dist_x = target_pos[0] - rect.x
@@ -31,7 +31,8 @@ def move_towards(game:Game , card, target_pos):
     # Check if the sprite is close enough to the target
     if distance < speed:
         rect.topleft = target_pos
-        game.moving_sprites.remove(card)  # Snap to the target position
+        card.card_sprite.start_pos = target_pos
+        #game.moving_sprites.remove(card.card_sprite)  # Snap to the target position
     else:
         # Move the sprite incrementally
         rect.x = lerp(rect.x, target_pos[0], speed / distance)
@@ -45,7 +46,7 @@ def main():
     game.create_sprites()
     game.start_game()
     for card in game.deck.contents:
-        images[card.name] = Image(card.name)
+        images[card.name] = Image(card)
     while run:
         clock.tick(60)
         for event in pygame.event.get():
@@ -61,7 +62,9 @@ def main():
         for entity in game.moving_sprites:
             move_towards(game,images[entity.name],entity.pos)
         for entity in game.all_sprites:
-            images[entity.name].seen = entity.faced_up
+            if entity.faced_up != images[entity.name].seen:
+                images[entity.name].change_image()
+            #images[entity.name].seen = entity.faced_up
             screen.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
         
         pygame.display.flip()

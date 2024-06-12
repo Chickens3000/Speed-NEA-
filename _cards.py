@@ -3,24 +3,7 @@ from pygame.locals import (
     RLEACCEL
 )
 
-class Image():
-    def __init__(self,name):
-        self.name = name
-        self.image = "./images/"+self.name + ".png"
-        self.seen = False
-        self.surf = pygame.image.load(self.image)
-        self.surf= pygame.transform.scale(self.surf, (144,209)).convert()
-        self.rect = self.surf.get_rect()
 
-        self.back_surf= pygame.image.load("./images/back.png")
-        self.back_surf= pygame.transform.scale(self.back_surf, (144,209)).convert()
-        self.back_rect = self.back_surf.get_rect()
-
-    def _image(self):
-        if self.seen == True:
-            return self.surf, self.rect
-        else:
-            return self.back_surf, self.back_rect
 
 class Card(pygame.sprite.Sprite):
     def __init__(self, code:tuple):
@@ -33,7 +16,7 @@ class Card(pygame.sprite.Sprite):
         # self.surf = pygame.image.load(self.image)
         # self.surf= pygame.transform.scale(self.surf, (144,209)).convert()
         # self.rect = self.surf.get_rect()
-
+        self.start_pos = (0,1)
         self.pos = (0,0)
 
     def create_name(self):
@@ -122,4 +105,30 @@ class Deck(Pile):
                 all_sprites.add(card)
                 self.push(card,all_sprites)  
         return all_sprites
-    
+
+class Image():
+    def __init__(self,card: Card):
+        self.card_sprite = card
+        self.name = card.name
+        self.image = "./images/"+self.name + ".png"
+        self.seen = False
+        self.surf = pygame.image.load(self.image)
+        self.surf= pygame.transform.scale(self.surf, (144,209)).convert()
+        self.rect = self.surf.get_rect()
+        self.back_surf= pygame.image.load("./images/back.png")
+        self.back_surf= pygame.transform.scale(self.back_surf, (144,209)).convert()
+        self.back_rect = self.back_surf.get_rect()
+
+    def _image(self):
+        if self.seen == True:
+            return self.surf, self.rect
+        else:
+            return self.back_surf, self.back_rect
+        
+    def change_image(self):
+        if self.seen == False:
+            self.rect.topleft = self.card_sprite.start_pos
+            self.seen = True
+        else:
+            self.back_rect.topleft = self.card_sprite.start_pos
+            self.seen = False
