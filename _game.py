@@ -11,7 +11,7 @@ class Game():
         self.deck = Deck("deck",52,(0,0))
         self.moving_sprites = pygame.sprite.Group() 
         self.all_sprites = pygame.sprite.LayeredUpdates()
-        self.flip_ready = [False,True]
+        self.flip_ready = [False,False]
 
     def create_sprites(self):
         self.all_sprites = self.deck.create_deck(self.all_sprites)
@@ -70,17 +70,19 @@ class Game():
             for stack in player.hand:
                 player.cards.push_all(stack.pop_all())
 
-    def update(self,p: Player,data: str):
-        player = p
-        if data == "q":
+    def update(self,player: Player,data: str):
+        if data in self.players[1].inputs:
+            player = self.players[1]
+        
+        if data == player.inputs[0]:
             pile = player.hand[0]
-        elif data == "w":
+        elif data ==  player.inputs[1]:
             pile = player.hand[1]
-        elif data == "e":
+        elif data ==  player.inputs[2]:
             pile = player.hand[2]
-        elif data == "r":
+        elif data ==  player.inputs[3]:
             pile = player.hand[3]
-        elif data == "g":
+        elif data ==  player.inputs[4]:
             pile = player.hand[4]
         else:
             return False            # If input is invalid, end procedure
@@ -92,6 +94,7 @@ class Game():
         for centre_pile in self.center_piles: # if card can be played, play card
             if self.move_is_valid(pile._peek(),centre_pile._peek()) == True:
                 self.move_card(pile,centre_pile)
+                self.flip_ready =  [False,False]
                 return False
         if self.stack(pile,player) != False: 
             hand  = self.stack(pile,player)

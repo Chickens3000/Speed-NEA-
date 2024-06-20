@@ -3,7 +3,7 @@ from _thread import *
 import pickle
 from _game import Game
 
-server = "192.168.1.118"
+server = "192.168.59.43"
 port = 5555
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -72,7 +72,6 @@ while True:
         games[gameId].create_sprites()
     else:
         games[gameId].ready = True
-        #games[gameId].create_sprites()
         games[gameId].start_game()
         p = 1
 
