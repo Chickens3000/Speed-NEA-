@@ -79,6 +79,9 @@ class Pile:
           return False
 
     def push_all(self, cards: list):
+        if cards == False:
+            print("Empty")
+            return False
         if self.stack_pointer < self.max - len(cards):
             self.stack_pointer += 1
             self.contents[self.stack_pointer:(self.stack_pointer +len(cards))] = cards

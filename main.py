@@ -17,9 +17,9 @@ screen = pygame.display.set_mode((width, height))
 bg = pygame.image.load("./images/backround.jpg")
 bg = pygame.transform.scale(bg, (width,height))
 pygame.display.set_caption("Game")
-online = True
+online = False
 images = {}
-def lerp(start, end, t): # change this
+def lerp(start, end, t):
     return start + t * (end - start)
 
 def move_towards(game:Game , card:Image, target_pos):

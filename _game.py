@@ -26,7 +26,7 @@ class Game():
                 card.pos = player.cards.pos
                 self.moving_sprites.add(card)
         self.round_setup()
-        self.flip_cards()
+        
 
     def round_setup(self):
         for player in self.players:
@@ -35,6 +35,7 @@ class Game():
                    self.move_card(player.cards,player.hand[i])
                 player.hand[i]._peek().faced_up = True
             self.move_all(player.cards,player.side_pile)
+        self.flip_cards()
 
     
     def lerp(self, start, end, t):
@@ -44,7 +45,7 @@ class Game():
         #Subroutine added to make animation easier
             card = start._pop()
             if card == False:
-                print("Empty!")
+                print(start.name,"Empty!")
             else:
                 end.push(card, self.all_sprites)
                 card.pos = end.pos
@@ -69,6 +70,9 @@ class Game():
             player.cards.push_all(player.side_pile.pop_all())
             for stack in player.hand:
                 player.cards.push_all(stack.pop_all())
+            for i in range(player.cards.stack_pointer):
+                player.cards.contents[i].faced_up = False
+        self.round_setup()
 
     def update(self,player: Player,data: str):
         if data in self.players[1].inputs:
@@ -84,6 +88,9 @@ class Game():
             pile = player.hand[3]
         elif data ==  player.inputs[4]:
             pile = player.hand[4]
+        elif data == player.inputs[5] or data == player.inputs[6]:
+            self.slam(player, data)
+            return False
         else:
             return False            # If input is invalid, end procedure
         if pile._peek() == False: # If pile is empty, end procedure
@@ -137,12 +144,9 @@ class Game():
         return False
 
     def check_for_moves(self, player:Player):
-        empty_hand = True
         for stack in player.hand:
-            if stack._peek() != False:
-                empty_hand == False
-            else:
-                continue
+            if stack._peek() == False:
+               continue
             for centre_pile in self.center_piles: # if card can be played, return that card
                 if self.move_is_valid(stack._peek(),centre_pile._peek()) == True:
                     return stack._peek()
@@ -153,11 +157,29 @@ class Game():
             if self.shift_cards(stack,player) != False:# Moves cards to empty pile if possible 
                 return stack._peek()
         
-        #If empty_hand == True, SLAM!!!!!!!!!!!!!!!
+        if self.empty_hand(player) == True:
+            return False
         self.flip_ready[player.id] = True
         if self.flip_ready[abs(player.id-1)] == True:
             self.flip_cards()
         
+    def slam(self, player:Player, data):
+        if self.empty_hand(self.players[0]) == True or self.empty_hand(self.players[1]) == True:
+            if data == player.inputs[5]:
+                self.move_all(self.center_piles[0],player.cards)
+                self.move_all(self.center_piles[1],self.players[abs(player.id -1)].cards)
+            elif data == player.inputs[6]:
+                self.move_all(self.center_piles[1],player.cards)
+                self.move_all(self.center_piles[0],self.players[abs(player.id -1)].cards)
+            else:
+                return False
+            self.end_round()
+
+    def empty_hand(self, player:Player):
+        for stack in player.hand:
+            if stack._peek() != False:
+                return False
+        return True
 
 
         
