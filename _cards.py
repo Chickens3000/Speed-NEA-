@@ -2,8 +2,8 @@ import pygame
 from pygame.locals import (
     RLEACCEL
 )
-
-
+CARD_WIDTH = 144
+CARD_HEIGHT = 209
 
 class Card(pygame.sprite.Sprite):
     def __init__(self, code:tuple):
@@ -18,7 +18,6 @@ class Card(pygame.sprite.Sprite):
         # self.rect = self.surf.get_rect()
         self.start_pos = (0,1)
         self.pos = (0,0)
-
     def create_name(self):
         name = ""
 
@@ -116,10 +115,10 @@ class Image():
         self.image = "./images/"+self.name + ".png"
         self.seen = False
         self.surf = pygame.image.load(self.image)
-        self.surf= pygame.transform.scale(self.surf, (144,209)).convert()
+        self.surf= pygame.transform.scale(self.surf, (CARD_WIDTH,CARD_HEIGHT)).convert()
         self.rect = self.surf.get_rect()
         self.back_surf= pygame.image.load("./images/back.png")
-        self.back_surf= pygame.transform.scale(self.back_surf, (144,209)).convert()
+        self.back_surf= pygame.transform.scale(self.back_surf, (CARD_WIDTH,CARD_HEIGHT)).convert()
         self.back_rect = self.back_surf.get_rect()
 
     def _image(self):

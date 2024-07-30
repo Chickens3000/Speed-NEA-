@@ -9,13 +9,15 @@ from pygame.locals import (
     RLEACCEL,
     K_ESCAPE,
     KEYDOWN,
+    MOUSEBUTTONDOWN,
+    MOUSEBUTTONUP,
     QUIT,
 )
-width = 1200
-height = 720
-screen = pygame.display.set_mode((width, height))
+SCREEN_WIDTH = 1200
+SCREEN_HEIGHT = 720
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 bg = pygame.image.load("./images/backround.jpg")
-bg = pygame.transform.scale(bg, (width,height))
+bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
 pygame.display.set_caption("Game")
 online = False
 images = {}
@@ -38,25 +40,54 @@ def move_towards(game:Game , card:Image, target_pos):
         rect.x = lerp(rect.x, target_pos[0], speed / distance)
         rect.y = lerp(rect.y, target_pos[1], speed / distance)
 
+def get_pile_under_mouse(game:Game):
+    x,y = pygame.Vector2(pygame.mouse.get_pos())
+    for pile in game.all_piles:
+        if x > pile.pos[0] and x < (pile.pos[0] + CARD_WIDTH) and y > pile.pos[1] and y < (pile.pos[1]+CARD_HEIGHT):
+            return pile
+    return None  
+
 def main():
     run = True
     clock = pygame.time.Clock()
     game = Game(0)
     player = game.players[0]
+    selected_card = None
+    old_pile = None
+    
     game.create_sprites()
     game.start_game()
     for card in game.deck.contents:
         images[card.name] = Image(card)
     while run:
+        pile_hover = get_pile_under_mouse(game)
         clock.tick(60)
         for event in pygame.event.get():
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     run = False
                 else:
-                    game.update(player,event.unicode)
+                    game.keyboard_update(player,event.unicode)
             elif event.type == QUIT:
                 run = False
+            if event.type == MOUSEBUTTONDOWN:
+                if pile_hover != None:
+                    selected_card = pile_hover._peek()
+                    old_pile = pile_hover
+            if event.type == MOUSEBUTTONUP:
+                if pile_hover != None and old_pile != None:
+                    game.mouse_update(old_pile,pile_hover)
+                else:
+                    if selected_card != None:
+                        game.move_card(old_pile,old_pile)
+                selected_card = None
+                old_pile = None
+                
+        if selected_card:
+            game.moving_sprites.add(selected_card)
+        
+            selected_card.pos = (pygame.Vector2(pygame.mouse.get_pos())[0]-(CARD_WIDTH/2),pygame.Vector2(pygame.mouse.get_pos())[1]-(CARD_HEIGHT/2))
+
 
         screen.blit(bg,(0,0))
         for entity in game.moving_sprites:

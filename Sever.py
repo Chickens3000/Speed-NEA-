@@ -31,13 +31,13 @@ def threaded_client(conn, p, gameId):
             data = conn.recv(2048*16).decode()
 
             if gameId in games:
-                game = games[gameId]
+                game:Game= games[gameId]
                 
                 if not data:
                     break
                 else:
                     if data != "get":
-                        game.update(game.players[p], data)
+                        game.keyboard_update(game.players[p], data)
                     try:
                         conn.sendall(pickle.dumps(game))
                     except Exception as E:
