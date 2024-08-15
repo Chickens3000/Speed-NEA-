@@ -12,6 +12,7 @@ class Game():
         self.moving_sprites = pygame.sprite.Group() 
         self.all_sprites = pygame.sprite.LayeredUpdates()
         self.flip_ready = [False,False]
+        self.all_piles = self.center_piles + self.players[0].hand + [self.players[0].side_pile] + self.players[1].hand + [self.players[1].side_pile]
 
     def create_sprites(self):
         self.all_sprites = self.deck.create_deck(self.all_sprites)
@@ -47,8 +48,14 @@ class Game():
             if card == False:
                 print(start.name,"Empty!")
             else:
+                print(end.stack_pointer)
+                if end.stack_pointer <= 8:
+                    card.pos = (end.pos[0],end.pos[1] + 4*end.stack_pointer)
+                else:
+                    card.pos = (end.pos[0],end.pos[1] + 32)
                 end.push(card, self.all_sprites)
-                card.pos = end.pos
+              
+
                 self.moving_sprites.add(card)
 
     def move_all(self,start:Pile,end:Pile):
@@ -74,7 +81,52 @@ class Game():
                 player.cards.contents[i].faced_up = False
         self.round_setup()
 
-    def update(self,player: Player,data: str):
+    def mouse_update(self,old_pile:Pile,new_pile:Pile):#should probably add a player check
+        if old_pile._peek() == False:
+            print(1) # If pile is empty or if new piles card is faced down, end procedure
+            return False
+        print(old_pile.name[0:4])
+        if old_pile.name[0:4] == "side":
+            if self.check_for_moves(self.players[int(old_pile.name[4])]) != None:
+                self.move_card(old_pile,old_pile)
+            return False
+        if old_pile.name[0:6] == "center":
+            self.slam(self.players[0],old_pile)
+        if old_pile._peek().faced_up == False: #If card is not revealed, reveal card
+            print(3)
+            old_pile._peek().faced_up = True
+            self.move_card(old_pile,old_pile)
+            return False
+        if new_pile._peek() == False:
+            self.move_card(old_pile,new_pile)
+            return False
+        if new_pile._peek().faced_up == False:
+            print(2)
+            self.move_card(old_pile,old_pile)
+            return False
+       
+        
+        if self.move_is_valid(old_pile._peek(),new_pile._peek()) == True and new_pile.name[0:6]== "center":
+            print(4)
+            self.move_card(old_pile,new_pile)
+            self.flip_ready =  [False,False]
+            return False
+        
+        if old_pile._peek().code[0] == new_pile._peek().code[0] and new_pile.name[0] == old_pile.name[0]:
+            print(5)
+            self.move_card(old_pile,new_pile)
+            return False
+        if new_pile._peek() == False and new_pile.name[0] == old_pile.name[0]:
+            print(6)
+            while old_pile._peek() != False and old_pile._peek().faced_up == True:
+                    self.move_card(old_pile,new_pile)
+            return False
+        #self.check_for_moves(player)
+        self.move_card(old_pile,old_pile)
+
+
+
+    def keyboard_update(self,player: Player,data: str):
         if data in self.players[1].inputs:
             player = self.players[1]
         
@@ -88,8 +140,11 @@ class Game():
             pile = player.hand[3]
         elif data ==  player.inputs[4]:
             pile = player.hand[4]
-        elif data == player.inputs[5] or data == player.inputs[6]:
-            self.slam(player, data)
+        elif data == player.inputs[5]:
+            self.slam(player, self.center_piles[0])
+            return False
+        elif data == player.inputs[6]:
+            self.slam(player, self.center_piles[1])
             return False
         else:
             return False            # If input is invalid, end procedure
@@ -163,12 +218,12 @@ class Game():
         if self.flip_ready[abs(player.id-1)] == True:
             self.flip_cards()
         
-    def slam(self, player:Player, data):
+    def slam(self, player:Player, pile):
         if self.empty_hand(self.players[0]) == True or self.empty_hand(self.players[1]) == True:
-            if data == player.inputs[5]:
+            if pile == self.center_piles[0]:
                 self.move_all(self.center_piles[0],player.cards)
                 self.move_all(self.center_piles[1],self.players[abs(player.id -1)].cards)
-            elif data == player.inputs[6]:
+            elif pile == self.center_piles[1]:
                 self.move_all(self.center_piles[1],player.cards)
                 self.move_all(self.center_piles[0],self.players[abs(player.id -1)].cards)
             else:
