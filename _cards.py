@@ -99,7 +99,7 @@ class Pile:
             return False
 
 class Deck(Pile):
-    def create_deck(self,all_sprites):
+    def create_deck(self,all_sprites :pygame.sprite.Group):
         suits =["S","H","D","C"]
         for suit in suits:
             for i in range(1,14):

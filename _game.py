@@ -48,8 +48,14 @@ class Game():
             if card == False:
                 print(start.name,"Empty!")
             else:
+                print(end.stack_pointer)
+                if end.stack_pointer <= 8:
+                    card.pos = (end.pos[0],end.pos[1] + 4*end.stack_pointer)
+                else:
+                    card.pos = (end.pos[0],end.pos[1] + 32)
                 end.push(card, self.all_sprites)
-                card.pos = end.pos
+              
+
                 self.moving_sprites.add(card)
 
     def move_all(self,start:Pile,end:Pile):
