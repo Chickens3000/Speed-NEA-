@@ -7,7 +7,7 @@ class Game():
         self.id = id
         self.ready = False
         self.players = [Player(0),Player(1)]
-        self.center_piles = [Pile("center1",52,(450,230)),Pile("center2",52,(606,230))]
+        self.center_piles = [Pile("center1",52,(SCREEN_WIDTH//2 - CARD_WIDTH - 10,(SCREEN_HEIGHT - 2* CARD_HEIGHT - 2* 30))),Pile("center2",52,(SCREEN_WIDTH//2 + 10,(SCREEN_HEIGHT - 2* CARD_HEIGHT - 2* 30)))]
         self.deck = Deck("deck",52,(0,0))
         self.moving_sprites = pygame.sprite.Group() 
         self.all_sprites = pygame.sprite.LayeredUpdates()
@@ -34,6 +34,8 @@ class Game():
             for i in range(0,5):
                 for x in range(5-i):
                    self.move_card(player.cards,player.hand[i])
+                if player.hand[i].is_empty():
+                    break
                 player.hand[i]._peek().faced_up = True
             self.move_all(player.cards,player.side_pile)
         self.flip_cards()
@@ -48,11 +50,18 @@ class Game():
             if card == False:
                 print(start.name,"Empty!")
             else:
-                print(end.stack_pointer)
-                if end.stack_pointer <= 8:
-                    card.pos = (end.pos[0],end.pos[1] + 4*end.stack_pointer)
+                if end.name[0:4] == "side":
+                    card.pos = end.pos
+                elif end.name[0:6] == "center":
+                    if end.stack_pointer <= 8:
+                        card.pos = (end.pos[0],end.pos[1] + 2*end.stack_pointer)
+                    else:
+                        card.pos = (end.pos[0],end.pos[1] + 16)
                 else:
-                    card.pos = (end.pos[0],end.pos[1] + 32)
+                    if end.stack_pointer <= 8:
+                        card.pos = (end.pos[0],end.pos[1] + 4*end.stack_pointer)
+                    else:
+                        card.pos = (end.pos[0],end.pos[1] + 32)
                 end.push(card, self.all_sprites)
               
 
@@ -71,6 +80,7 @@ class Game():
         self.move_card(self.players[1].side_pile,self.center_piles[1])
         for pile in self.center_piles:
             pile._peek().faced_up = True
+        self.flip_ready = [ False,False]
 
     def end_round(self): # Assuming slammed pile has allready been added to cards
         for player in self.players:
@@ -82,10 +92,8 @@ class Game():
         self.round_setup()
 
     def mouse_update(self,old_pile:Pile,new_pile:Pile):#should probably add a player check
-        if old_pile._peek() == False:
-            print(1) # If pile is empty or if new piles card is faced down, end procedure
+        if old_pile._peek() == False: # If pile is empty or if new piles card is faced down, end procedure
             return False
-        print(old_pile.name[0:4])
         if old_pile.name[0:4] == "side":
             if self.check_for_moves(self.players[int(old_pile.name[4])]) != None:
                 self.move_card(old_pile,old_pile)
@@ -93,7 +101,6 @@ class Game():
         if old_pile.name[0:6] == "center":
             self.slam(self.players[0],old_pile)
         if old_pile._peek().faced_up == False: #If card is not revealed, reveal card
-            print(3)
             old_pile._peek().faced_up = True
             self.move_card(old_pile,old_pile)
             return False
@@ -101,23 +108,19 @@ class Game():
             self.move_card(old_pile,new_pile)
             return False
         if new_pile._peek().faced_up == False:
-            print(2)
             self.move_card(old_pile,old_pile)
             return False
        
         
         if self.move_is_valid(old_pile._peek(),new_pile._peek()) == True and new_pile.name[0:6]== "center":
-            print(4)
             self.move_card(old_pile,new_pile)
             self.flip_ready =  [False,False]
             return False
         
         if old_pile._peek().code[0] == new_pile._peek().code[0] and new_pile.name[0] == old_pile.name[0]:
-            print(5)
             self.move_card(old_pile,new_pile)
             return False
         if new_pile._peek() == False and new_pile.name[0] == old_pile.name[0]:
-            print(6)
             while old_pile._peek() != False and old_pile._peek().faced_up == True:
                     self.move_card(old_pile,new_pile)
             return False
@@ -126,9 +129,7 @@ class Game():
 
 
 
-    def keyboard_update(self,player: Player,data: str):
-        if data in self.players[1].inputs:
-            player = self.players[1]
+    def keyboard_update(self,player: Player,data: str): # returns pile if input is valid but not valid move
         
         if data == player.inputs[0]:
             pile = player.hand[0]
@@ -168,7 +169,7 @@ class Game():
             while pile._peek() != False and pile._peek().faced_up == True:
                     self.move_card(pile,hand)
             return False
-        self.check_for_moves(player)
+        return pile
 
     def move_is_valid(self,card:Card,top_card:Card):
         if abs(top_card.code[0] - card.code[0]) == 1 or abs(top_card.code[0] - card.code[0])== 12:

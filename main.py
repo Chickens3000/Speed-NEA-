@@ -2,6 +2,8 @@ import pygame
 from network import Network
 from _game import * 
 from _cards import *
+from _thread import *
+from time import sleep
 pygame.init() 
 pygame.font.init()
 pygame.display.init()
@@ -13,13 +15,12 @@ from pygame.locals import (
     MOUSEBUTTONUP,
     QUIT,
 )
-SCREEN_WIDTH = 1200
-SCREEN_HEIGHT = 720
+
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 bg = pygame.image.load("./images/backround.jpg")
 bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
 pygame.display.set_caption("Game")
-online = False
+online = True
 images = {}
 def lerp(start, end, t):
     return start + t * (end - start)
@@ -40,12 +41,38 @@ def move_towards(game:Game , card:Image, target_pos):
         rect.x = lerp(rect.x, target_pos[0], speed / distance)
         rect.y = lerp(rect.y, target_pos[1], speed / distance)
 
+
 def get_pile_under_mouse(game:Game):
     x,y = pygame.Vector2(pygame.mouse.get_pos())
     for pile in game.all_piles:
         if x > pile.pos[0] and x < (pile.pos[0] + CARD_WIDTH) and y > pile.pos[1] and y < (pile.pos[1]+CARD_HEIGHT):
             return pile
     return None  
+
+def time_out(player : Player,game:Game, card:Image, start_pos):
+    player.timed_out = True
+    for i in range(5):
+        sleep(0.05)
+        move_towards(game, card, (start_pos[0]+10,start_pos[1]))
+        sleep(0.05)
+        move_towards(game, card, (start_pos[0]-10,start_pos[1]))
+        move_towards(game, card, (start_pos[0]-10,start_pos[1]))
+        sleep(0.05)
+        move_towards(game, card,start_pos)
+  
+    player.timed_out = False
+
+def load_text(string, size, colour):
+    font = pygame.font.SysFont("arial",size)
+    text = font.render(string, 1, colour)
+    return text
+def fonts(game:Game):
+    if game.flip_ready[0] == True:
+        text = load_text("ready",50,(255,255,255))
+        screen.blit(text,((game.players[0].side_pile.pos[0] + CARD_WIDTH + 20),game.players[0].side_pile.pos[1]))
+    if game.flip_ready[1] == True:
+        text = load_text("ready",50,(255,255,255))
+        screen.blit(text,((game.players[1].side_pile.pos[0] - text.get_width() - 20),game.players[1].side_pile.pos[1]))
 
 def main():
     run = True
@@ -60,6 +87,7 @@ def main():
     for card in game.deck.contents:
         images[card.name] = Image(card)
     while run:
+        
         pile_hover = get_pile_under_mouse(game)
         clock.tick(60)
         for event in pygame.event.get():
@@ -67,7 +95,13 @@ def main():
                 if event.key == K_ESCAPE:
                     run = False
                 else:
-                    game.keyboard_update(player,event.unicode)
+                    if event.unicode not in player.inputs:
+                        player = game.players[abs(player.id -1)]
+                    if player.timed_out == False:
+                        _return = game.keyboard_update(player,event.unicode)
+                        if _return != False:
+                            start_new_thread(time_out,(player,game,images[_return._peek().name],_return._peek().pos))
+
             elif event.type == QUIT:
                 run = False
             if event.type == MOUSEBUTTONDOWN:
@@ -89,7 +123,7 @@ def main():
 
 
         screen.blit(bg,(0,0))
-
+        fonts(game)
         for entity in game.all_sprites:
             if entity.faced_up != images[entity.name].seen:
                 images[entity.name].change_image()
@@ -133,7 +167,7 @@ def main_online():
         pile_hover = get_pile_under_mouse(game)
         for event in pygame.event.get():
 
-            if event.type == KEYDOWN:
+            if event.type == KEYDOWN: # Timeoutes online to be done server side
                 if event.key == K_ESCAPE:
                     run = False
                 else:
@@ -146,11 +180,9 @@ def main_online():
                     old_pile = pile_hover
             if event.type == MOUSEBUTTONUP:
                 if pile_hover != None and old_pile != None:
-                    #game.mouse_update(old_pile,pile_hover)
                     n.send("update:"+old_pile.name+";"+pile_hover.name)
                 else:
                     if selected_card != None:
-                        #game.move_card(old_pile,old_pile)
                         n.send("return:"+old_pile.name)
                 selected_card = None
                 old_pile = None
@@ -158,6 +190,7 @@ def main_online():
        
                 
         screen.blit(bg,(0,0))
+        fonts(game)
         for entity in game.all_sprites:
             if entity.faced_up != images[entity.name].seen:
                 images[entity.name].change_image()

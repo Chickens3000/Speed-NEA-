@@ -1,17 +1,18 @@
 import socket
 from _thread import *
 import pickle
-from _game import Game
+from _game import * 
+from _cards import *
+from time import sleep
+server = socket.gethostbyname(socket.gethostname())
 
-server = "192.168.1.205"
 port = 5555
-
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 try:
     s.bind((server, port))
 except socket.error as e:
-    str(e)
+    print(str(e))
 
 s.listen(2)
 print("Waiting for a connection, Server Started")
@@ -19,6 +20,25 @@ print("Waiting for a connection, Server Started")
 connected = set()
 games = {}
 idCount = 0
+def time_out(player : Player, card: Card, start_pos):
+    player.timed_out = True
+    sleep(0.1)
+    card.pos = (card.pos[0] + 10,card.pos[1])
+    sleep(0.05)
+    card.pos = start_pos
+    card.pos = (card.pos[0] - 10,card.pos[1])
+    sleep(0.05)
+    card.pos = start_pos
+    card.pos = (card.pos[0] + 10,card.pos[1])
+    sleep(0.05)
+    card.pos = start_pos
+    card.pos = (card.pos[0] - 10,card.pos[1])
+    sleep(0.05)
+    card.pos = start_pos
+    sleep(0.05)
+
+    player.timed_out = False
+
 def threaded_client(conn, p, gameId):
     global idCount
     conn.sendall(pickle.dumps(games[gameId].players[p]))
@@ -26,10 +46,11 @@ def threaded_client(conn, p, gameId):
     reply = ""
     while True:
         try:
-            data = conn.recv(2048*16).decode()
+            data = conn.recv(2048).decode()
 
             if gameId in games:
                 game= games[gameId]
+                player = game.players[p]
                 if not data:
                     break
                 else:
@@ -48,7 +69,10 @@ def threaded_client(conn, p, gameId):
                                 if data[7:] == pile.name:
                                     game.move_card(pile,pile)
                         else:
-                            game.keyboard_update(game.players[p], data)
+                            if player.timed_out == False:
+                                _return = game.keyboard_update(player,data)
+                                if _return != False:
+                                    start_new_thread(time_out,(player,_return._peek(),_return._peek().pos))
                     try:
                         conn.sendall(pickle.dumps(game))
                     except Exception as E:

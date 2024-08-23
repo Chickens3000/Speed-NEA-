@@ -2,6 +2,8 @@ import pygame
 from pygame.locals import (
     RLEACCEL
 )
+SCREEN_WIDTH = 1200
+SCREEN_HEIGHT = 720
 CARD_WIDTH = 144
 CARD_HEIGHT = 209
 
@@ -97,6 +99,10 @@ class Pile:
             return cards
         else:
             return False
+    
+    def is_empty(self):
+        if self.stack_pointer == -1:
+            return True
 
 class Deck(Pile):
     def create_deck(self,all_sprites :pygame.sprite.Group):
