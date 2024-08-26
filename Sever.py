@@ -2,7 +2,7 @@ import socket
 from _thread import *
 import pickle
 from _game import * 
-from _cards import *
+from gameobjects import *
 from time import sleep
 server = socket.gethostbyname(socket.gethostname())
 

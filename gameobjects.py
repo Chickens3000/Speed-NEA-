@@ -6,6 +6,7 @@ SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 720
 CARD_WIDTH = 144
 CARD_HEIGHT = 209
+FONT = "calibri"
 
 class Card(pygame.sprite.Sprite):
     def __init__(self, code:tuple):
@@ -140,3 +141,29 @@ class Image():
         else:
             self.back_rect.topleft = self.card_sprite.start_pos
             self.seen = False
+
+class Button(pygame.sprite.Sprite):
+    def __init__(self, name, pos,font_size):
+        super(Button,self).__init__()
+        self.name = name
+        font = pygame.font.SysFont(FONT,font_size )
+        self.text = font.render(name, 1, (255,255,255))
+        self.width, self.height = self.text.get_width() + 70,self.text.get_height() + 20
+        self.x,self.y = self.repos(pos)
+
+
+    def draw(self, win):
+        pygame.draw.rect(win,(255,255,255),(self.x, self.y,self.width, self.height),5,10)
+        win.blit(self.text, (self.x + round(self.width/2) - round(self.text.get_width()/2), self.y + round(self.height/2) - round(self.text.get_height()/2)))
+
+    def click(self, pos):
+        x1 = pos[0]
+        y1 = pos[1]
+        if self.x <= x1 <= self.x + self.width and self.y <= y1 <= self.y + self.height:
+            return True
+        else:
+            return False
+
+    def repos(self,pos):
+        new_pos = (pos[0]- self.width//2,pos[1]- self.height//2)
+        return new_pos
