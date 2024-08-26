@@ -20,7 +20,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 bg = pygame.image.load("./images/backround.jpg")
 bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
 pygame.display.set_caption("Game")
-online = False
+online = True
 images = {}
 def lerp(start, end, t):
     return start + t * (end - start)
@@ -155,6 +155,7 @@ def main_online():
     try:
         for card in game.deck.contents:
             images[card.name] = Image(card)
+            images["red_joker"] = Image(Joker((99,"J")))
     except Exception as E:
         print(E)
         print("Couldn't get game 2")
@@ -170,6 +171,10 @@ def main_online():
             print("Couldn't get game 3")
             break
         pile_hover = get_pile_under_mouse(game)
+        if game.winner:
+            run = False
+            print("player",game.winner.id, "wins")
+
         for event in pygame.event.get():
 
             if event.type == KEYDOWN: # Timeoutes online to be done server side
