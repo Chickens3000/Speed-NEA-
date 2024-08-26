@@ -1,2 +1,3 @@
-import pygame
-print(pygame.font.get_fonts())
+john = "john"
+if john:
+    print("YES")

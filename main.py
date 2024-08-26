@@ -20,7 +20,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 bg = pygame.image.load("./images/backround.jpg")
 bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
 pygame.display.set_caption("Game")
-online = True
+online = False
 images = {}
 def lerp(start, end, t):
     return start + t * (end - start)
@@ -86,10 +86,15 @@ def main():
     game.start_game()
     for card in game.deck.contents:
         images[card.name] = Image(card)
+    images["red_joker"] = Image(Joker((99,"J")))
     while run:
         
         pile_hover = get_pile_under_mouse(game)
         clock.tick(60)
+        if game.winner:
+            run = False
+            print("player",game.winner.id, "wins")
+
         for event in pygame.event.get():
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:

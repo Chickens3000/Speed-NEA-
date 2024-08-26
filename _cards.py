@@ -13,11 +13,6 @@ class Card(pygame.sprite.Sprite):
         self.code = code
         self.name = self.create_name()
         self.faced_up = False
-        # self.image = "./images/"+self.name + ".png"
-        # self.seen = True
-        # self.surf = pygame.image.load(self.image)
-        # self.surf= pygame.transform.scale(self.surf, (144,209)).convert()
-        # self.rect = self.surf.get_rect()
         self.start_pos = (0,1)
         self.pos = (0,0)
     def create_name(self):
@@ -43,7 +38,10 @@ class Card(pygame.sprite.Sprite):
         elif self.code[1] == "D":
             name+= "diamonds"
         return name
-        
+
+class Joker(Card):
+    def create_name(self):
+        return "red_joker"        
 class Pile:
 
     def __init__(self,name,max,pos) -> None:
