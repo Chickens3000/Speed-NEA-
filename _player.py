@@ -1,4 +1,4 @@
-from _cards import *
+from gameobjects import *
 
 class Player:
     
