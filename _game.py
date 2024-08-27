@@ -1,5 +1,5 @@
 from _player import *
-from _cards import *
+from gameobjects import *
 import random
 
 class Game():

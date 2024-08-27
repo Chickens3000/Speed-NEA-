@@ -1,7 +1,7 @@
 import pygame
 from network import Network
 from _game import * 
-from _cards import *
+from gameobjects import *
 from _thread import *
 from time import sleep
 pygame.init() 
@@ -22,6 +22,7 @@ bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
 pygame.display.set_caption("Game")
 online = True
 images = {}
+buttons = pygame.sprite.Group()
 def lerp(start, end, t):
     return start + t * (end - start)
 
@@ -63,7 +64,7 @@ def time_out(player : Player,game:Game, card:Image, start_pos):
     player.timed_out = False
 
 def load_text(string, size, colour):
-    font = pygame.font.SysFont("arial",size)
+    font = pygame.font.SysFont(FONT,size)
     text = font.render(string, 1, colour)
     return text
 def fonts(game:Game):
@@ -73,6 +74,14 @@ def fonts(game:Game):
     if game.flip_ready[1] == True:
         text = load_text("ready",50,(255,255,255))
         screen.blit(text,((game.players[1].side_pile.pos[0] - text.get_width() - 20),game.players[1].side_pile.pos[1]))
+
+def button_action(text):
+    if text == "Singleplayer":
+        buttons.empty()
+        main()
+    elif text == "2 Player":
+        buttons.empty()
+        main_online()
 
 def main():
     run = True
@@ -215,7 +224,26 @@ def main_online():
         
         pygame.display.flip()
 
-if online == True:
-    main_online()
-else:
-    main()
+def menu():
+    run = True
+    clock = pygame.time.Clock()
+    buttons.add(Button("Singleplayer",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2- 120),80),Button("2 Player",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2),80))
+    while run:
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                run = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                for button in buttons:
+                    if button.click(pos):
+                        button_action(button.name)
+                        run = False
+        
+        screen.blit(bg,(0,0))
+        for btn in buttons:
+            btn.draw(screen)
+        pygame.display.flip()
+    menu()
+menu()
