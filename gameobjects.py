@@ -42,7 +42,8 @@ class Card(pygame.sprite.Sprite):
 
 class Joker(Card):
     def create_name(self):
-        return "red_joker"        
+        return "red_joker"    
+    
 class Pile:
 
     def __init__(self,name,max,pos) -> None:

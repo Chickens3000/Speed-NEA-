@@ -234,16 +234,18 @@ def menu():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 run = False
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 for button in buttons:
                     if button.click(pos):
                         button_action(button.name)
-                        run = False
+                        menu() 
         
         screen.blit(bg,(0,0))
         for btn in buttons:
             btn.draw(screen)
         pygame.display.flip()
-    menu()
 menu()
