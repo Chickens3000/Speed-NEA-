@@ -95,10 +95,15 @@ def main():
     game.start_game()
     for card in game.deck.contents:
         images[card.name] = Image(card)
+    images["red_joker"] = Image(Joker((99,"J")))
     while run:
         
         pile_hover = get_pile_under_mouse(game)
         clock.tick(60)
+        if game.winner:
+            run = False
+            print("player",game.winner.id, "wins")
+
         for event in pygame.event.get():
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
@@ -159,6 +164,7 @@ def main_online():
     try:
         for card in game.deck.contents:
             images[card.name] = Image(card)
+            images["red_joker"] = Image(Joker((99,"J")))
     except Exception as E:
         print(E)
         print("Couldn't get game 2")
@@ -174,6 +180,10 @@ def main_online():
             print("Couldn't get game 3")
             break
         pile_hover = get_pile_under_mouse(game)
+        if game.winner:
+            run = False
+            print("player",game.winner.id, "wins")
+
         for event in pygame.event.get():
 
             if event.type == KEYDOWN: # Timeoutes online to be done server side
@@ -224,16 +234,18 @@ def menu():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 run = False
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 for button in buttons:
                     if button.click(pos):
                         button_action(button.name)
-                        run = False
+                        menu() 
         
         screen.blit(bg,(0,0))
         for btn in buttons:
             btn.draw(screen)
         pygame.display.flip()
-    menu()
 menu()
