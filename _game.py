@@ -20,10 +20,8 @@ class Game():
 
     def start_game(self):
         random.shuffle(self.deck.contents)
-        print(len(self.deck.contents[0:26]))
-        print(len(self.deck.contents[26:53]))
-        self.players[0].cards.push_all(self.deck.contents[0:26])
-        self.players[1].cards.push_all(self.deck.contents[26:53])
+        self.players[0].cards.push_all(self.deck.contents[0:43])
+        self.players[1].cards.push_all(self.deck.contents[43:53])
         for player in self.players:
             for i in range(player.cards.stack_pointer +1 ):
                 card = player.cards.contents[i]
@@ -123,6 +121,7 @@ class Game():
         for pile in self.center_piles:
             if pile.is_empty != True:
                 pile._peek().faced_up = True
+        
         self.flip_ready = [False,False]
 
     def end_round(self): # Assuming slammed pile has allready been added to cards
