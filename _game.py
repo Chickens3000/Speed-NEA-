@@ -20,8 +20,8 @@ class Game():
 
     def start_game(self):
         random.shuffle(self.deck.contents)
-        self.players[0].cards.push_all(self.deck.contents[0:26])
-        self.players[1].cards.push_all(self.deck.contents[26:53])
+        self.players[0].cards.push_all(self.deck.contents[0:2])
+        self.players[1].cards.push_all(self.deck.contents[2:53])
         for player in self.players:
             for i in range(player.cards.stack_pointer +1 ):
                 card = player.cards.contents[i]

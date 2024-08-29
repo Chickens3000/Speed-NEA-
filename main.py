@@ -195,8 +195,9 @@ def main_online():
             break
         pile_hover = get_pile_under_mouse(game)
         if game.winner:
+            scr.win_card(game.winner,player)
+            menu()
             run = False
-            print("player",game.winner.id, "wins")
 
         for event in pygame.event.get():
 

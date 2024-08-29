@@ -25,7 +25,7 @@ class ScreenCard():
     
     def win_card(self,winner,player):
         self.empty()
-        if player == winner:
+        if player.id == winner.id:
             text = Text(("Player"+str(player.id +1)+" Wins!!"),80)
         else:
             text = Text(("Unlucky, Player"+str(player.id +1)+" Wins!"),80)
