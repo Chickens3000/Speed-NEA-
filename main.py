@@ -2,6 +2,7 @@ import pygame
 from network import Network
 from _game import * 
 from gameobjects import *
+from screencards import *
 from _thread import *
 from time import sleep
 pygame.init() 
@@ -16,13 +17,13 @@ from pygame.locals import (
     QUIT,
 )
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 bg = pygame.image.load("./images/backround.jpg")
 bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
 pygame.display.set_caption("Game")
+scr = ScreenCard() 
 online = True
 images = {}
-buttons = pygame.sprite.Group()
 def lerp(start, end, t):
     return start + t * (end - start)
 
@@ -69,19 +70,30 @@ def load_text(string, size, colour):
     return text
 def fonts(game:Game):
     if game.flip_ready[0] == True:
-        text = load_text("ready",50,(255,255,255))
-        screen.blit(text,((game.players[0].side_pile.pos[0] + CARD_WIDTH + 20),game.players[0].side_pile.pos[1]))
+        text = Text("ready",50)
+        text.set_pos((game.players[0].side_pile.pos[0] + CARD_WIDTH + 20),game.players[0].side_pile.pos[1])
+        text.draw(win)
     if game.flip_ready[1] == True:
-        text = load_text("ready",50,(255,255,255))
-        screen.blit(text,((game.players[1].side_pile.pos[0] - text.get_width() - 20),game.players[1].side_pile.pos[1]))
+        text = Text("ready",50)
+        text.set_pos((game.players[1].side_pile.pos[0] - text.width - 20),game.players[1].side_pile.pos[1])
+        text.draw(win)
+    if game.empty_hand(game.players[0]) == True or game.empty_hand(game.players[1]) == True:
+        text1 = Text("T / B",80)
+        text2 = Text("Y / H",80)
+        text1.set_pos(SCREEN_WIDTH//2-CARD_WIDTH - text1.width - 20,SCREEN_HEIGHT//2 - text1.height//2)
+        text2.set_pos(SCREEN_WIDTH//2+CARD_WIDTH + 20 ,SCREEN_HEIGHT//2 - text2.height//2)
+        text1.draw(win)
+        text2.draw(win)
 
 def button_action(text):
     if text == "Singleplayer":
-        buttons.empty()
+        scr.empty()
         main()
+        scr.main_menu()
     elif text == "2 Player":
-        buttons.empty()
+        scr.empty()
         main_online()
+        scr.main_menu()
 
 def main():
     run = True
@@ -101,8 +113,10 @@ def main():
         pile_hover = get_pile_under_mouse(game)
         clock.tick(60)
         if game.winner:
+            scr.win_card(game.winner,player)
+            menu()
             run = False
-            print("player",game.winner.id, "wins")
+
 
         for event in pygame.event.get():
             if event.type == KEYDOWN:
@@ -136,12 +150,12 @@ def main():
             selected_card.pos = (pygame.Vector2(pygame.mouse.get_pos())[0]-(CARD_WIDTH/2),pygame.Vector2(pygame.mouse.get_pos())[1]-(CARD_HEIGHT/2))
 
 
-        screen.blit(bg,(0,0))
+        win.blit(bg,(0,0))
         fonts(game)
         for entity in game.all_sprites:
             if entity.faced_up != images[entity.name].seen:
                 images[entity.name].change_image()
-            screen.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
+            win.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
             if entity in game.moving_sprites:
                 move_towards(game,images[entity.name],entity.pos)
         
@@ -208,7 +222,7 @@ def main_online():
                 
        
                 
-        screen.blit(bg,(0,0))
+        win.blit(bg,(0,0))
         fonts(game)
         for entity in game.all_sprites:
             if entity.faced_up != images[entity.name].seen:
@@ -218,7 +232,7 @@ def main_online():
             elif entity in game.moving_sprites:
                 move_towards(game,images[entity.name],entity.pos)
                 
-            screen.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
+            win.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
 
         
         
@@ -227,7 +241,6 @@ def main_online():
 def menu():
     run = True
     clock = pygame.time.Clock()
-    buttons.add(Button("Singleplayer",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2- 120),80),Button("2 Player",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2),80))
     while run:
         clock.tick(60)
         for event in pygame.event.get():
@@ -239,13 +252,13 @@ def menu():
                     run = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
-                for button in buttons:
+                for button in scr.buttons:
                     if button.click(pos):
                         button_action(button.name)
-                        menu() 
         
-        screen.blit(bg,(0,0))
-        for btn in buttons:
-            btn.draw(screen)
+        win.blit(bg,(0,0))
+        scr.display(win)
         pygame.display.flip()
+
+scr.main_menu()
 menu()
