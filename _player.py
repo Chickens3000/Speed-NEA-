@@ -16,3 +16,23 @@ class Player:
             self.side_pile = Pile("side"+(str(id)),36,(SCREEN_WIDTH//2+(450-CARD_WIDTH//2),(SCREEN_HEIGHT - 2* CARD_HEIGHT - 2* 30))) 
             self.cards = Pile(str(id)+"cards",52,(1300,-100))
             self.inputs = ["n","j","k","l",";","b","h"]
+
+class Opponent(Player):
+    def __init__(self,difficulty):
+        super(Opponent,self).__init__(1)
+        self.delay = difficulty
+        
+    def make_move(self,game):
+        pile = game.check_for_moves(self)
+        if pile != False:
+            game.play_card(pile, self)
+    
+    def flip(self):
+        for stack in self.hand:
+            topcard = stack._peek()
+            if topcard == False:
+                continue
+            if topcard.faced_up == False:
+                print(topcard.name)
+                topcard.faced_up = True
+                return True
