@@ -81,7 +81,7 @@ def fonts(game:Game):
         text1 = Text("T / B",80)
         text2 = Text("Y / H",80)
         text1.set_pos(SCREEN_WIDTH//2-CARD_WIDTH - text1.width - 20,SCREEN_HEIGHT//2 - text1.height//2)
-        text2.set_pos(SCREEN_WIDTH//2+CARD_WIDTH + text2.width + 20 ,SCREEN_HEIGHT//2 - text2.height//2)
+        text2.set_pos(SCREEN_WIDTH//2+CARD_WIDTH + 20 ,SCREEN_HEIGHT//2 - text2.height//2)
         text1.draw(win)
         text2.draw(win)
 
@@ -89,9 +89,11 @@ def button_action(text):
     if text == "Singleplayer":
         scr.empty()
         main()
+        scr.main_menu()
     elif text == "2 Player":
         scr.empty()
         main_online()
+        scr.main_menu()
 
 def main():
     run = True
@@ -114,8 +116,7 @@ def main():
             scr.win_card(game.winner,player)
             menu()
             run = False
-            scr.main_menu()
-            menu()
+
 
         for event in pygame.event.get():
             if event.type == KEYDOWN:
@@ -254,11 +255,10 @@ def menu():
                 for button in scr.buttons:
                     if button.click(pos):
                         button_action(button.name)
-                        menu() 
         
         win.blit(bg,(0,0))
         scr.display(win)
         pygame.display.flip()
+
 scr.main_menu()
-while True:
-    menu()
+menu()

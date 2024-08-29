@@ -26,9 +26,9 @@ class ScreenCard():
     def win_card(self,winner,player):
         self.empty()
         if player == winner:
-            text = Text("You Win!!!",80)
+            text = Text(("Player"+str(player.id +1)+" Wins!!"),80)
         else:
-            text = Text(("Unlucky, Player",player.id +1," Wins!"),80)
+            text = Text(("Unlucky, Player"+str(player.id +1)+" Wins!"),80)
         text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT//2 - text.height//2)
         self.texts.add(text)
         text = Text("Press Esc to return to Menu",30)
