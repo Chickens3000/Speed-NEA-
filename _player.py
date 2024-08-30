@@ -40,6 +40,29 @@ class Opponent(Player):
             if topcard == False:
                 continue
             if topcard.faced_up == False:
-                print(topcard.name)
                 topcard.faced_up = True
                 return True
+
+class AdaptiveOpponent(Opponent):
+    def __init__(self, difficulty):
+        super().__init__(difficulty)
+        self.last_3_rnds = [0,0,0]
+
+    def edit_delay(self): # Takes a parameter of how many wins the computer got in the last 3 rounds
+        wins = sum(self.last_3_rnds)
+        if self.delay > 250:
+            if wins ==3:
+                self.delay += 1000
+            elif wins == 2:
+                self.delay += 500
+            elif wins == 1:
+                self.delay -= 200
+            else:
+                if self.delay < 800:
+                    self.delay = 250
+                self.delay -= 800
+    
+    def edit_wins(self,x): # x is a variable which is either 1/0, depending on win or loss
+        self.last_3_rnds[0:2] = self.last_3_rnds[1:3] 
+        self.last_3_rnds[2] = x
+        print(self.last_3_rnds)
