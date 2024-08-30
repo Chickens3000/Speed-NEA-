@@ -1,5 +1,5 @@
 from gameobjects import *
-
+import random
 class Player:
     
     def __init__(self,id):
@@ -23,10 +23,17 @@ class Opponent(Player):
         self.delay = difficulty
         
     def make_move(self,game):
+        if game.empty_hand(game.players[0]) == True or game.empty_hand(game.players[1]) == True:
+            #Comparison of piles, innacuracy in comparison is proportional to the amount of cards in the pile
+            if game.center_piles[0].stack_pointer + random.randint(-(game.center_piles[0].stack_pointer//7),(game.center_piles[0].stack_pointer//7)) < game.center_piles[1].stack_pointer+ random.randint(-(game.center_piles[1].stack_pointer//7),(game.center_piles[1].stack_pointer//7)):
+                game.slam(self,game.center_piles[0])
+            else:
+                 game.slam(self,game.center_piles[1])
+            return False
         pile = game.check_for_moves(self)
         if pile != False:
             game.play_card(pile, self)
-    
+        
     def flip(self):
         for stack in self.hand:
             topcard = stack._peek()

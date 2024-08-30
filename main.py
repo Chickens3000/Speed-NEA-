@@ -92,7 +92,7 @@ def fonts(game:Game):
 def button_action(text):
     if text == "Singleplayer":
         scr.empty()
-        main_1_player(2000)
+        main_1_player(1000)
         scr.main_menu()
     elif text == "2 Player":
         scr.empty()
