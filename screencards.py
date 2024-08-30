@@ -13,6 +13,7 @@ class ScreenCard():
     def __init__(self) -> None:
         self.texts = pygame.sprite.Group()
         self.buttons = pygame.sprite.Group()
+        self.screen = "main_menu"
     
     def empty(self):
         self.texts.empty()
@@ -22,7 +23,20 @@ class ScreenCard():
         self.empty()
         self.buttons.add(Button("Singleplayer",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2- 120),80),
                        Button("2 Player",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2),80))
-    
+        self.screen = "main_menu"
+    def two_player_menu(self):
+        self.empty()
+        self.buttons.add(Button("Local",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2- 120),80),
+                       Button("Online",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2),80))
+        self.screen = "two_player_menu"
+    def singleplayer_menu(self):
+        self.empty()
+        self.buttons.add(Button("Theo",(SCREEN_WIDTH//2-450,SCREEN_HEIGHT//2),60),
+                        Button("Sophie",(SCREEN_WIDTH//2-150,SCREEN_HEIGHT//2),60),
+                        Button("Harvey",(SCREEN_WIDTH//2 + 150,SCREEN_HEIGHT//2),60),
+                        Button("Robin",(SCREEN_WIDTH//2 + 450,SCREEN_HEIGHT//2),60),
+                        Button("Gilly",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2 + 120),60))
+        self.screen = "singleplayer_menu"
     def win_card(self,winner,player):
         self.empty()
         if player.id == winner.id:
@@ -34,7 +48,28 @@ class ScreenCard():
         text = Text("Press Esc to return to Menu",30)
         text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT - text.height-40)
         self.texts.add(text)
-    
+        self.screen = "win_card"
+
+    def sever_offline(self):
+        self.empty()
+        text = Text("Sever is offline at the moment",100)
+        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT//2 - text.height//2)
+        self.texts.add(text)
+        text = Text("Press Esc to return to Menu",30)
+        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT - text.height-40)
+        self.texts.add(text)
+        self.screen = "sever_offline"
+        
+    def waiting_for_game(self,win,bg):
+        win.blit(bg,(0,0))
+        text = Text("Waiting for opponent...",100)
+        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT//2-text.height//2)
+        text.draw(win)
+        text = Text("Press Esc to return to Menu",30)
+        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT - text.height-40)
+        self.texts.add(text)
+        self.screen = "waiting_for_game"
+
     def display(self,win):
         for item in self.texts:
             item.draw(win)
