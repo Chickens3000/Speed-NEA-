@@ -48,6 +48,15 @@ class ScreenCard():
         text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT - text.height-40)
         self.texts.add(text)
     
+    def sever_offline(self):
+        self.empty()
+        text = Text("Sever is offline at the moment",100)
+        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT//2 - text.height//2)
+        self.texts.add(text)
+        text = Text("Press Esc to return to Menu",30)
+        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT - text.height-40)
+        self.texts.add(text)
+        
     def display(self,win):
         for item in self.texts:
             item.draw(win)

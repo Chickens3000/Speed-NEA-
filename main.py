@@ -201,7 +201,6 @@ def main_2_player():
         images[card.name] = Image(card)
     images["red_joker"] = Image(Joker((99,"J")))
     while run:
-        
         pile_hover = get_pile_under_mouse(game)
         clock.tick(60)
         if game.winner:
@@ -264,7 +263,8 @@ def main_online():
     try:
         game = n.send("get")
     except:
-        print("Couldn't get game 1")
+        scr.sever_offline()
+        menu()
         run = False
     
     try:
@@ -273,7 +273,8 @@ def main_online():
             images["red_joker"] = Image(Joker((99,"J")))
     except Exception as E:
         print(E)
-        print("Couldn't get game 2")
+        scr.sever_offline()
+        menu()
         run = False 
 
     while run:
@@ -283,49 +284,56 @@ def main_online():
             game = n.send("get")
         except:
             run = False
-            print("Couldn't get game 3")
-            break
-        pile_hover = get_pile_under_mouse(game)
-        if game.winner:
-            scr.win_card(game.winner,player)
+            scr.sever_offline()
             menu()
-            run = False
-
-        for event in pygame.event.get():
-
-            if event.type == KEYDOWN: # Timeoutes online to be done server side
-                if event.key == K_ESCAPE:
-                    run = False
-                else:
-                    n.send(event.unicode)
-            elif event.type == QUIT:
+            break
+        if game.ready == False:
+            win.blit(bg,(0,0))
+            text = Text("Waiting for opponent...",100)
+            text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT//2-text.height//2)
+            text.draw(win)
+        else:
+            pile_hover = get_pile_under_mouse(game)
+            if game.winner:
+                scr.win_card(game.winner,player)
+                menu()
                 run = False
-            if event.type == MOUSEBUTTONDOWN:
-                if pile_hover != None:
-                    selected_card = pile_hover._peek()
-                    old_pile = pile_hover
-            if event.type == MOUSEBUTTONUP:
-                if pile_hover != None and old_pile != None:
-                    n.send("update:"+old_pile.name+";"+pile_hover.name)
-                else:
-                    if selected_card != None:
-                        n.send("return:"+old_pile.name)
-                selected_card = None
-                old_pile = None
-                
-       
-                
-        win.blit(bg,(0,0))
-        fonts(game)
-        for entity in game.all_sprites:
-            if entity.faced_up != images[entity.name].seen:
-                images[entity.name].change_image()
-            if selected_card:
-                move_towards(game,images[selected_card.name],(pygame.Vector2(pygame.mouse.get_pos())[0]-(CARD_WIDTH/2),pygame.Vector2(pygame.mouse.get_pos())[1]-(CARD_HEIGHT/2)))
-            elif entity in game.moving_sprites:
-                move_towards(game,images[entity.name],entity.pos)
-                
-            win.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
+
+            for event in pygame.event.get():
+
+                if event.type == KEYDOWN: # Timeoutes online to be done server side
+                    if event.key == K_ESCAPE:
+                        run = False
+                    else:
+                        n.send(event.unicode)
+                elif event.type == QUIT:
+                    run = False
+                if event.type == MOUSEBUTTONDOWN:
+                    if pile_hover != None:
+                        selected_card = pile_hover._peek()
+                        old_pile = pile_hover
+                if event.type == MOUSEBUTTONUP:
+                    if pile_hover != None and old_pile != None:
+                        n.send("update:"+old_pile.name+";"+pile_hover.name)
+                    else:
+                        if selected_card != None:
+                            n.send("return:"+old_pile.name)
+                    selected_card = None
+                    old_pile = None
+                    
+        
+                    
+            win.blit(bg,(0,0))
+            fonts(game)
+            for entity in game.all_sprites:
+                if entity.faced_up != images[entity.name].seen:
+                    images[entity.name].change_image()
+                if selected_card:
+                    move_towards(game,images[selected_card.name],(pygame.Vector2(pygame.mouse.get_pos())[0]-(CARD_WIDTH/2),pygame.Vector2(pygame.mouse.get_pos())[1]-(CARD_HEIGHT/2)))
+                elif entity in game.moving_sprites:
+                    move_towards(game,images[entity.name],entity.pos)
+                    
+                win.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
 
         
         
