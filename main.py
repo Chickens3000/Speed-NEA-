@@ -5,7 +5,6 @@ from gameobjects import *
 from screencards import *
 from _thread import *
 from time import sleep
-from ai_opponent import *
 import random
 pygame.init() 
 pygame.font.init()
@@ -91,13 +90,30 @@ def fonts(game:Game):
 
 def button_action(text):
     if text == "Singleplayer":
-        scr.empty()
-        main_1_player(1000)
-        scr.main_menu()
+        scr.singleplayer_menu()
     elif text == "2 Player":
+        scr.two_player_menu()
+    elif text == "Local":
+        scr.empty()
+        main_2_player()
+    elif text == "Online":
         scr.empty()
         main_online()
-        scr.main_menu()
+    elif text == "Theo":
+        scr.empty()
+        main_1_player(5000)
+    elif text == "Sophie":
+        scr.empty()
+        main_1_player(2000)
+    elif text == "Harvey":
+        scr.empty()
+        main_1_player(1000)
+    elif text == "Robin":
+        scr.empty()
+        main_1_player(750)
+    elif text == "Gilly":
+        scr.empty()
+        main_1_player(-1)
 
 def main_1_player(difficulty):
     run = True
@@ -170,6 +186,7 @@ def main_1_player(difficulty):
                 move_towards(game,images[entity.name],entity.pos)
         
         pygame.display.flip()
+    scr.main_menu()
 
 def main_2_player():
     run = True
@@ -185,7 +202,6 @@ def main_2_player():
         images[card.name] = Image(card)
     images["red_joker"] = Image(Joker((99,"J")))
     while run:
-        
         pile_hover = get_pile_under_mouse(game)
         clock.tick(60)
         if game.winner:
@@ -236,6 +252,7 @@ def main_2_player():
                 move_towards(game,images[entity.name],entity.pos)
         
         pygame.display.flip()
+    scr.main_menu()
      
 def main_online():
     game : Game
@@ -247,18 +264,13 @@ def main_online():
     old_pile = None
     try:
         game = n.send("get")
-    except:
-        print("Couldn't get game 1")
-        run = False
-    
-    try:
         for card in game.deck.contents:
             images[card.name] = Image(card)
             images["red_joker"] = Image(Joker((99,"J")))
-    except Exception as E:
-        print(E)
-        print("Couldn't get game 2")
-        run = False 
+    except:
+        scr.sever_offline()
+        menu()
+        run = False
 
     while run:
         
@@ -267,53 +279,62 @@ def main_online():
             game = n.send("get")
         except:
             run = False
-            print("Couldn't get game 3")
-            break
-        pile_hover = get_pile_under_mouse(game)
-        if game.winner:
-            scr.win_card(game.winner,player)
+            scr.sever_offline()
             menu()
-            run = False
-
-        for event in pygame.event.get():
-
-            if event.type == KEYDOWN: # Timeoutes online to be done server side
-                if event.key == K_ESCAPE:
-                    run = False
-                else:
-                    n.send(event.unicode)
-            elif event.type == QUIT:
+            break
+        if game.ready == False:
+            scr.waiting_for_game(win,bg)
+            for event in pygame.event.get():
+                if event.type == KEYDOWN: # Timeoutes online to be done server side
+                    if event.key == K_ESCAPE:
+                        run = False
+        else:
+            pile_hover = get_pile_under_mouse(game)
+            if game.winner:
+                scr.win_card(game.winner,player)
+                menu()
                 run = False
-            if event.type == MOUSEBUTTONDOWN:
-                if pile_hover != None:
-                    selected_card = pile_hover._peek()
-                    old_pile = pile_hover
-            if event.type == MOUSEBUTTONUP:
-                if pile_hover != None and old_pile != None:
-                    n.send("update:"+old_pile.name+";"+pile_hover.name)
-                else:
-                    if selected_card != None:
-                        n.send("return:"+old_pile.name)
-                selected_card = None
-                old_pile = None
-                
-       
-                
-        win.blit(bg,(0,0))
-        fonts(game)
-        for entity in game.all_sprites:
-            if entity.faced_up != images[entity.name].seen:
-                images[entity.name].change_image()
-            if selected_card:
-                move_towards(game,images[selected_card.name],(pygame.Vector2(pygame.mouse.get_pos())[0]-(CARD_WIDTH/2),pygame.Vector2(pygame.mouse.get_pos())[1]-(CARD_HEIGHT/2)))
-            elif entity in game.moving_sprites:
-                move_towards(game,images[entity.name],entity.pos)
-                
-            win.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
+
+            for event in pygame.event.get():
+
+                if event.type == KEYDOWN: # Timeoutes online to be done server side
+                    if event.key == K_ESCAPE:
+                        run = False
+                    else:
+                        n.send(event.unicode)
+                elif event.type == QUIT:
+                    run = False
+                if event.type == MOUSEBUTTONDOWN:
+                    if pile_hover != None:
+                        selected_card = pile_hover._peek()
+                        old_pile = pile_hover
+                if event.type == MOUSEBUTTONUP:
+                    if pile_hover != None and old_pile != None:
+                        n.send("update:"+old_pile.name+";"+pile_hover.name)
+                    else:
+                        if selected_card != None:
+                            n.send("return:"+old_pile.name)
+                    selected_card = None
+                    old_pile = None
+                    
+        
+                    
+            win.blit(bg,(0,0))
+            fonts(game)
+            for entity in game.all_sprites:
+                if entity.faced_up != images[entity.name].seen:
+                    images[entity.name].change_image()
+                if selected_card:
+                    move_towards(game,images[selected_card.name],(pygame.Vector2(pygame.mouse.get_pos())[0]-(CARD_WIDTH/2),pygame.Vector2(pygame.mouse.get_pos())[1]-(CARD_HEIGHT/2)))
+                elif entity in game.moving_sprites:
+                    move_towards(game,images[entity.name],entity.pos)
+                    
+                win.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
 
         
         
         pygame.display.flip()
+    scr.main_menu()
 
 def menu():
     run = True
@@ -326,7 +347,10 @@ def menu():
                 run = False
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
-                    run = False
+                    if scr.screen == "main_menu":
+                        exit()
+                    else:
+                        scr.main_menu()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 for button in scr.buttons:
@@ -336,6 +360,5 @@ def menu():
         win.blit(bg,(0,0))
         scr.display(win)
         pygame.display.flip()
-
 scr.main_menu()
 menu()
