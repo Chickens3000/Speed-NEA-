@@ -186,6 +186,7 @@ def main_1_player(difficulty):
                 move_towards(game,images[entity.name],entity.pos)
         
         pygame.display.flip()
+    scr.main_menu()
 
 def main_2_player():
     run = True
@@ -251,6 +252,7 @@ def main_2_player():
                 move_towards(game,images[entity.name],entity.pos)
         
         pygame.display.flip()
+    scr.main_menu()
      
 def main_online():
     game : Game
@@ -262,20 +264,13 @@ def main_online():
     old_pile = None
     try:
         game = n.send("get")
+        for card in game.deck.contents:
+            images[card.name] = Image(card)
+            images["red_joker"] = Image(Joker((99,"J")))
     except:
         scr.sever_offline()
         menu()
         run = False
-    
-    try:
-        for card in game.deck.contents:
-            images[card.name] = Image(card)
-            images["red_joker"] = Image(Joker((99,"J")))
-    except Exception as E:
-        print(E)
-        scr.sever_offline()
-        menu()
-        run = False 
 
     while run:
         
@@ -288,10 +283,11 @@ def main_online():
             menu()
             break
         if game.ready == False:
-            win.blit(bg,(0,0))
-            text = Text("Waiting for opponent...",100)
-            text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT//2-text.height//2)
-            text.draw(win)
+            scr.waiting_for_game(win,bg)
+            for event in pygame.event.get():
+                if event.type == KEYDOWN: # Timeoutes online to be done server side
+                    if event.key == K_ESCAPE:
+                        run = False
         else:
             pile_hover = get_pile_under_mouse(game)
             if game.winner:
@@ -338,6 +334,7 @@ def main_online():
         
         
         pygame.display.flip()
+    scr.main_menu()
 
 def menu():
     run = True
@@ -350,7 +347,10 @@ def menu():
                 run = False
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
-                    run = False
+                    if scr.screen == "main_menu":
+                        exit()
+                    else:
+                        scr.main_menu()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 for button in scr.buttons:
