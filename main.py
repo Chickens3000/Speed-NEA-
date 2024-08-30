@@ -5,7 +5,6 @@ from gameobjects import *
 from screencards import *
 from _thread import *
 from time import sleep
-from ai_opponent import *
 import random
 pygame.init() 
 pygame.font.init()
@@ -91,13 +90,30 @@ def fonts(game:Game):
 
 def button_action(text):
     if text == "Singleplayer":
-        scr.empty()
-        main_1_player(1000)
-        scr.main_menu()
+        scr.singleplayer_menu()
     elif text == "2 Player":
+        scr.two_player_menu()
+    elif text == "Local":
+        scr.empty()
+        main_2_player()
+    elif text == "Online":
         scr.empty()
         main_online()
-        scr.main_menu()
+    elif text == "Theo":
+        scr.empty()
+        main_1_player(5000)
+    elif text == "Sophie":
+        scr.empty()
+        main_1_player(2000)
+    elif text == "Harvey":
+        scr.empty()
+        main_1_player(1000)
+    elif text == "Robin":
+        scr.empty()
+        main_1_player(750)
+    elif text == "Gilly":
+        scr.empty()
+        main_1_player(-1)
 
 def main_1_player(difficulty):
     run = True
@@ -336,6 +352,5 @@ def menu():
         win.blit(bg,(0,0))
         scr.display(win)
         pygame.display.flip()
-
 scr.main_menu()
 menu()

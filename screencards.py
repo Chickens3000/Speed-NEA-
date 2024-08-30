@@ -23,6 +23,19 @@ class ScreenCard():
         self.buttons.add(Button("Singleplayer",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2- 120),80),
                        Button("2 Player",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2),80))
     
+    def two_player_menu(self):
+        self.empty()
+        self.buttons.add(Button("Local",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2- 120),80),
+                       Button("Online",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2),80))
+    
+    def singleplayer_menu(self):
+        self.empty()
+        self.buttons.add(Button("Theo",(SCREEN_WIDTH//2-450,SCREEN_HEIGHT//2),60),
+                        Button("Sophie",(SCREEN_WIDTH//2-150,SCREEN_HEIGHT//2),60),
+                        Button("Harvey",(SCREEN_WIDTH//2 + 150,SCREEN_HEIGHT//2),60),
+                        Button("Robin",(SCREEN_WIDTH//2 + 450,SCREEN_HEIGHT//2),60),
+                        Button("Gilly",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2 + 120),60))
+        
     def win_card(self,winner,player):
         self.empty()
         if player.id == winner.id:
