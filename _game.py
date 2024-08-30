@@ -198,7 +198,11 @@ class Game():
             self.slam(player, self.center_piles[1])
             return False
         else:
-            return False            # If input is invalid, end procedure
+            return False
+        
+        return self.play_card(pile,player)
+
+    def play_card(self,pile,player):
         if pile._peek() == False: # If pile is empty, end procedure
             return False
         if pile._peek().faced_up == False: #If card is not revealed, reveal card
@@ -256,21 +260,23 @@ class Game():
                continue
             for centre_pile in self.center_piles: # if card can be played, return that card
                 if self.move_is_valid(stack._peek(),centre_pile._peek()) == True:
-                    return stack._peek()
+                    return stack
             if stack._peek().faced_up == False: #If card is not revealed, reveal card
-                return stack._peek()
+                return stack
             if self.stack(stack,player) != False: 
-                return stack._peek()
+                return stack
             if self.shift_cards(stack,player) != False:# Moves cards to empty pile if possible 
-                return stack._peek()
+                return stack
         
         if self.empty_hand(player) == True:
             return False
+        
         self.flip_ready[player.id] = True
         if self.players[abs(player.id-1)].side_pile.is_empty():
             self.check_for_moves(self.players[abs(player.id-1)])
         elif self.flip_ready[abs(player.id-1)] == True:
             self.flip_cards()
+        return False
         
     def slam(self, player:Player, pile: Pile):
         id = int(pile.name[6])
