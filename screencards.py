@@ -61,14 +61,28 @@ class ScreenCard():
         self.screen = "sever_offline"
         
     def waiting_for_game(self,win,bg):
+        self.empty()
         win.blit(bg,(0,0))
         text = Text("Waiting for opponent...",100)
         text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT//2-text.height//2)
         text.draw(win)
         text = Text("Press Esc to return to Menu",30)
         text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT - text.height-40)
-        self.texts.add(text)
+        text.draw(win)
         self.screen = "waiting_for_game"
+
+    def online_quit(self):
+        self.empty()
+        text = Text("Opponent disconnected",100)
+        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT//2 - text.height//2)
+        self.texts.add(text)
+        text = Text("You win?...ig?",60)
+        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT - text.height - 200)
+        self.texts.add(text)
+        text = Text("Press Esc to return to Menu",30)
+        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT - text.height-40)
+        self.texts.add(text)
+        self.screen = "Online_quit"
 
     def display(self,win):
         for item in self.texts:

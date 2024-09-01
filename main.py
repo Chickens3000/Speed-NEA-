@@ -287,8 +287,9 @@ def main_online():
         try:
             game = n.send("get")
         except:
+            print("YEP")
             run = False
-            scr.sever_offline()
+            scr.online_quit()
             menu()
             break
         if game.ready == False:
@@ -370,4 +371,4 @@ def menu():
         scr.display(win)
         pygame.display.flip()
 scr.main_menu()
-menu()
+menu() 
