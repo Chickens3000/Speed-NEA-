@@ -128,6 +128,10 @@ class Game():
                 player.cards.push_all(stack.pop_all())
             for i in range(player.cards.stack_pointer):
                 player.cards.contents[i].faced_up = False
+            
+            #Change the difficulty of adaptive opponent if appropriate
+            if player.__class__ == AdaptiveOpponent:
+                player.edit_delay()
         self.next_round()
 
     def mouse_update(self,old_pile:Pile,new_pile:Pile):#should probably add a player check
@@ -279,14 +283,6 @@ class Game():
         
 
         if (self.empty_hand(self.players[0]) == True or self.empty_hand(self.players[1]) == True) and pile.name[0:6] == "center":
-            #Change the difficulty of adaptive opponent if appropriate
-            if self.players[1].__class__ == AdaptiveOpponent:
-                opponent:AdaptiveOpponent = self.players[1]
-                if self.empty_hand(self.players[0]) == True:
-                    opponent.edit_wins(0)
-                elif self.empty_hand(opponent) == True:
-                    opponent.edit_wins(1)
-                opponent.edit_delay()
                 
             if pile._peek().name == "red_joker":
                 if self.check_for_win(player) == True:
