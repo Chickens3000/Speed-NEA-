@@ -23,28 +23,7 @@ bg = pygame.image.load("./images/backround.jpg")
 bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
 pygame.display.set_caption("Game")
 scr = ScreenCard() 
-online = True
 images = {}
-
-def lerp(start, end, t):
-    return start + t * (end - start)
-
-def move_towards(game:Game , card:Image, target_pos):
-    surf, rect = card._image()
-    speed = 40
-    dist_x = target_pos[0] - rect.x
-    dist_y = target_pos[1] - rect.y
-    distance = (dist_x ** 2 + dist_y ** 2) ** 0.5
-    # Check if the sprite is close enough to the target
-    if distance < speed:
-        rect.topleft = target_pos
-        card.card_sprite.start_pos = target_pos
-        game.moving_sprites.remove(card.card_sprite)  # Snap to the target position
-    else:
-        # Move the sprite incrementally
-        rect.x = lerp(rect.x, target_pos[0], speed / distance)
-        rect.y = lerp(rect.y, target_pos[1], speed / distance)
-
 
 def get_pile_under_mouse(game:Game):
     x,y = pygame.Vector2(pygame.mouse.get_pos())
@@ -57,36 +36,14 @@ def time_out(player : Player,game:Game, card:Image, start_pos):
     player.timed_out = True
     for i in range(5):
         sleep(0.05)
-        move_towards(game, card, (start_pos[0]+10,start_pos[1]))
+        card.move_towards(game, (start_pos[0]+10,start_pos[1]))
         sleep(0.05)
-        move_towards(game, card, (start_pos[0]-10,start_pos[1]))
-        move_towards(game, card, (start_pos[0]-10,start_pos[1]))
+        card.move_towards(game, (start_pos[0]-10,start_pos[1]))
+        card.move_towards(game, (start_pos[0]-10,start_pos[1]))
         sleep(0.05)
-        move_towards(game, card,start_pos)
+        card.move_towards(game,start_pos)
   
     player.timed_out = False
-
-def load_text(string, size, colour):
-    font = pygame.font.SysFont(FONT,size)
-    text = font.render(string, 1, colour)
-    return text
-
-def fonts(game:Game):
-    if game.flip_ready[0] == True:
-        text = Text("ready",50)
-        text.set_pos((game.players[0].side_pile.pos[0] + CARD_WIDTH + 20),game.players[0].side_pile.pos[1])
-        text.draw(win)
-    if game.flip_ready[1] == True:
-        text = Text("ready",50)
-        text.set_pos((game.players[1].side_pile.pos[0] - text.width - 20),game.players[1].side_pile.pos[1])
-        text.draw(win)
-    if game.empty_hand(game.players[0]) == True or game.empty_hand(game.players[1]) == True:
-        text1 = Text("T / B",80)
-        text2 = Text("Y / H",80)
-        text1.set_pos(SCREEN_WIDTH//2-CARD_WIDTH - text1.width - 20,SCREEN_HEIGHT//2 - text1.height//2)
-        text2.set_pos(SCREEN_WIDTH//2+CARD_WIDTH + 20 ,SCREEN_HEIGHT//2 - text2.height//2)
-        text1.draw(win)
-        text2.draw(win)
 
 def button_action(text):
     if text == "Singleplayer":
@@ -186,13 +143,13 @@ def main_1_player(delay):
 
 
         win.blit(bg,(0,0))
-        fonts(game)
+        scr.game_texts(game,win)
         for entity in game.all_sprites:
             if entity.faced_up != images[entity.name].seen:
                 images[entity.name].change_image()
             win.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
             if entity in game.moving_sprites:
-                move_towards(game,images[entity.name],entity.pos)
+                images[entity.name].move_towards(game,entity.pos)
         
         pygame.display.flip()
     scr.main_menu()
@@ -252,13 +209,13 @@ def main_2_player():
 
 
         win.blit(bg,(0,0))
-        fonts(game)
+        scr.game_texts(game,win)
         for entity in game.all_sprites:
             if entity.faced_up != images[entity.name].seen:
                 images[entity.name].change_image()
             win.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
             if entity in game.moving_sprites:
-                move_towards(game,images[entity.name],entity.pos)
+                images[entity.name].move_towards(game,entity.pos)
         
         pygame.display.flip()
     scr.main_menu()
@@ -330,14 +287,14 @@ def main_online():
         
                     
             win.blit(bg,(0,0))
-            fonts(game)
+            scr.game_texts(game,win)
             for entity in game.all_sprites:
                 if entity.faced_up != images[entity.name].seen:
                     images[entity.name].change_image()
                 if selected_card:
-                    move_towards(game,images[selected_card.name],(pygame.Vector2(pygame.mouse.get_pos())[0]-(CARD_WIDTH/2),pygame.Vector2(pygame.mouse.get_pos())[1]-(CARD_HEIGHT/2)))
+                    images[selected_card.name].move_towards(game,(pygame.Vector2(pygame.mouse.get_pos())[0]-(CARD_WIDTH/2),pygame.Vector2(pygame.mouse.get_pos())[1]-(CARD_HEIGHT/2)))
                 elif entity in game.moving_sprites:
-                    move_towards(game,images[entity.name],entity.pos)
+                    images[entity.name].move_towards(game,entity.pos)
                     
                 win.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
 

@@ -9,6 +9,7 @@ CARD_HEIGHT = 209
 FONT = "calibri"
 
 class Card(pygame.sprite.Sprite):
+
     def __init__(self, code:tuple):
         super(Card, self).__init__()
         self.code = code
@@ -16,6 +17,7 @@ class Card(pygame.sprite.Sprite):
         self.faced_up = False
         self.start_pos = (0,1)
         self.pos = (0,0)
+
     def create_name(self):
         name = ""
 
@@ -139,4 +141,23 @@ class Image():
         else:
             self.back_rect.topleft = self.card_sprite.start_pos
             self.seen = False
+    
+    def lerp(self, start, end, t):
+        return start + t * (end - start)
+
+    def move_towards(self, game , target_pos):
+        surf, rect = self._image()
+        speed = 40
+        dist_x = target_pos[0] - rect.x
+        dist_y = target_pos[1] - rect.y
+        distance = (dist_x ** 2 + dist_y ** 2) ** 0.5
+        # Check if the sprite is close enough to the target
+        if distance < speed:
+            rect.topleft = target_pos
+            self.card_sprite.start_pos = target_pos
+            game.moving_sprites.remove(self.card_sprite)  # Snap to the target position
+        else:
+            # Move the sprite incrementally
+            rect.x = self.lerp(rect.x, target_pos[0], speed / distance)
+            rect.y = self.lerp(rect.y, target_pos[1], speed / distance)
 

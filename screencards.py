@@ -59,18 +59,7 @@ class ScreenCard():
         text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT - text.height-40)
         self.texts.add(text)
         self.screen = "sever_offline"
-        
-    def waiting_for_game(self,win,bg):
-        self.empty()
-        win.blit(bg,(0,0))
-        text = Text("Waiting for opponent...",100)
-        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT//2-text.height//2)
-        text.draw(win)
-        text = Text("Press Esc to return to Menu",30)
-        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT - text.height-40)
-        text.draw(win)
-        self.screen = "waiting_for_game"
-
+    
     def online_quit(self):
         self.empty()
         text = Text("Opponent disconnected",100)
@@ -83,12 +72,40 @@ class ScreenCard():
         text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT - text.height-40)
         self.texts.add(text)
         self.screen = "Online_quit"
+        
+    def waiting_for_game(self,win,bg):
+        self.empty()
+        win.blit(bg,(0,0))
+        text = Text("Waiting for opponent...",100)
+        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT//2-text.height//2)
+        text.draw(win)
+        text = Text("Press Esc to return to Menu",30)
+        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT - text.height-40)
+        text.draw(win)
+        self.screen = "waiting_for_game"
 
     def display(self,win):
         for item in self.texts:
             item.draw(win)
         for item in self.buttons:
             item.draw(win)
+    
+    def game_texts(self,game:Game,win):
+        if game.flip_ready[0] == True:
+            text = Text("ready",50)
+            text.set_pos((game.players[0].side_pile.pos[0] + CARD_WIDTH + 20),game.players[0].side_pile.pos[1])
+            text.draw(win)
+        if game.flip_ready[1] == True:
+            text = Text("ready",50)
+            text.set_pos((game.players[1].side_pile.pos[0] - text.width - 20),game.players[1].side_pile.pos[1])
+            text.draw(win)
+        if game.empty_hand(game.players[0]) == True or game.empty_hand(game.players[1]) == True:
+            text1 = Text("T / B",80)
+            text2 = Text("Y / H",80)
+            text1.set_pos(SCREEN_WIDTH//2-CARD_WIDTH - text1.width - 20,SCREEN_HEIGHT//2 - text1.height//2)
+            text2.set_pos(SCREEN_WIDTH//2+CARD_WIDTH + 20 ,SCREEN_HEIGHT//2 - text2.height//2)
+            text1.draw(win)
+            text2.draw(win)
         
         
 
