@@ -51,15 +51,14 @@ class AdaptiveOpponent(Opponent):
     def edit_delay(self): 
         self.round_number += 1
         no_cards = self.cards.stack_pointer + 1
-        if no_cards >= 34:
+        if no_cards >= 32:
             self.delay -= 500
-        elif no_cards <= 18:
+        elif no_cards <= 20:
             self.delay += 500
         elif no_cards <= 10:
             self.delay -= 1000
-        
-        if self.round_number >= 5:
-            self.delay += 100
+            
+        self.delay += (100 * (self.round_number // 5))
         if self.delay < 500:
             self.delay = 500
 

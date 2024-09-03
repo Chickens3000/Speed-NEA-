@@ -121,7 +121,7 @@ def main_1_player(delay):
     game = Game(0)
     player = game.players[0]
     if delay == -1:
-        game.players[1] = AdaptiveOpponent(3000)
+        game.players[1] = AdaptiveOpponent(2000)
     else:
         game.players[1] = Opponent(delay)
     
