@@ -40,6 +40,25 @@ class Opponent(Player):
             if topcard == False:
                 continue
             if topcard.faced_up == False:
-                print(topcard.name)
                 topcard.faced_up = True
                 return True
+
+class AdaptiveOpponent(Opponent):
+    def __init__(self, difficulty):
+        super().__init__(difficulty)
+        self.round_number = 1
+
+    def edit_delay(self): 
+        self.round_number += 1
+        no_cards = self.cards.stack_pointer + 1
+        if no_cards >= 32:
+            self.delay -= 500
+        elif no_cards <= 20:
+            self.delay += 500
+        elif no_cards <= 10:
+            self.delay -= 1000
+            
+        self.delay += (100 * (self.round_number // 5))
+        if self.delay < 500:
+            self.delay = 500
+

@@ -43,7 +43,6 @@ def threaded_client(conn, p, gameId):
     global idCount
     conn.sendall(pickle.dumps(games[gameId].players[p]))
 
-    reply = ""
     while True:
         try:
             data = conn.recv(2048).decode()

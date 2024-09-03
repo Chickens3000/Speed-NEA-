@@ -69,7 +69,6 @@ class Game():
                     player.hand[i]._peek().faced_up = True
                 self.move_all(player.cards,player.side_pile)
         if borrow == True:
-            print(borrower_id)
             self.move_card(self.players[abs(borrower_id-1)].side_pile,self.players[borrower_id].side_pile)
         self.flip_cards()
 
@@ -85,9 +84,7 @@ class Game():
     def move_card(self,start:Pile,end:Pile):
         #Subroutine added to make animation easier
             card = start._pop()
-            if card == False:
-                print(start.name,"Empty!")
-            else:
+            if card != False:
                 if end.name[0:4] == "side":
                     card.pos = end.pos
                 elif end.name[0:6] == "center":
@@ -126,13 +123,15 @@ class Game():
 
     def end_round(self): # Assuming slammed pile has allready been added to cards
         for player in self.players:
-            print(player.cards, player.cards.stack_pointer)
             player.cards.push_all(player.side_pile.pop_all())
             for stack in player.hand:
                 player.cards.push_all(stack.pop_all())
             for i in range(player.cards.stack_pointer):
                 player.cards.contents[i].faced_up = False
-            print(player.cards,player.cards.stack_pointer)
+            
+            #Change the difficulty of adaptive opponent if appropriate
+            if player.__class__ == AdaptiveOpponent:
+                player.edit_delay()
         self.next_round()
 
     def mouse_update(self,old_pile:Pile,new_pile:Pile):#should probably add a player check
@@ -280,7 +279,11 @@ class Game():
         
     def slam(self, player:Player, pile: Pile):
         id = int(pile.name[6])
+
+        
+
         if (self.empty_hand(self.players[0]) == True or self.empty_hand(self.players[1]) == True) and pile.name[0:6] == "center":
+                
             if pile._peek().name == "red_joker":
                 if self.check_for_win(player) == True:
                     self.winner = player

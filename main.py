@@ -115,12 +115,15 @@ def button_action(text):
         scr.empty()
         main_1_player(-1)
 
-def main_1_player(difficulty):
+def main_1_player(delay):
     run = True
     clock = pygame.time.Clock()
     game = Game(0)
     player = game.players[0]
-    game.players[1] = Opponent(difficulty)
+    if delay == -1:
+        game.players[1] = AdaptiveOpponent(2000)
+    else:
+        game.players[1] = Opponent(delay)
     
     selected_card = None
     old_pile = None
@@ -141,6 +144,12 @@ def main_1_player(difficulty):
             scr.win_card(game.winner,player)
             menu()
             run = False
+
+        if game.players[1].delay != delay:
+            delay = game.players[1].delay
+            print(delay)
+            pygame.time.set_timer(AI_MOVE,game.players[1].delay)
+            pygame.time.set_timer(AI_FLIP,game.players[1].delay//2 + random.randint(10,25)*17)
 
 
         for event in pygame.event.get():
@@ -278,8 +287,9 @@ def main_online():
         try:
             game = n.send("get")
         except:
+            print("YEP")
             run = False
-            scr.sever_offline()
+            scr.online_quit()
             menu()
             break
         if game.ready == False:
@@ -361,4 +371,4 @@ def menu():
         scr.display(win)
         pygame.display.flip()
 scr.main_menu()
-menu()
+menu() 
