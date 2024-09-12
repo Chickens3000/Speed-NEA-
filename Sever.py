@@ -54,7 +54,9 @@ def threaded_client(conn, p, gameId):
                     break
                 else:
                     if data != "get":
-                        if data[0:6] == "update":
+                        if data == "pause":
+                            game.paused = not game.paused
+                        elif data[0:6] == "update":
                             colon = data.index(":")
                             semi_colon = data.index(";")
                             for pile in game.all_piles:

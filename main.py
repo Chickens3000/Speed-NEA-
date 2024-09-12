@@ -10,6 +10,7 @@ pygame.init()
 pygame.font.init()
 pygame.display.init()
 from pygame.locals import (
+    SRCALPHA, 
     RLEACCEL,
     K_ESCAPE,
     KEYDOWN,
@@ -103,8 +104,6 @@ def main_1_player(delay):
             run = False
 
         if game.players[1].delay != delay:
-            delay = game.players[1].delay
-            print(delay)
             pygame.time.set_timer(AI_MOVE,game.players[1].delay)
             pygame.time.set_timer(AI_FLIP,game.players[1].delay//2 + random.randint(10,25)*17)
 
@@ -112,7 +111,10 @@ def main_1_player(delay):
         for event in pygame.event.get():
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
-                    run = False
+                    game.paused = True
+                    scr.paused()
+                    run = paused_screen(game,images)
+                    game.paused = False
                 else:
                     if player.timed_out == False:
                         _return = game.keyboard_update(player,event.unicode)
@@ -136,21 +138,10 @@ def main_1_player(delay):
                         game.move_card(old_pile,old_pile)
                 selected_card = None
                 old_pile = None
-                
-        if selected_card:
-            game.moving_sprites.add(selected_card)
-            selected_card.pos = (pygame.Vector2(pygame.mouse.get_pos())[0]-(CARD_WIDTH/2),pygame.Vector2(pygame.mouse.get_pos())[1]-(CARD_HEIGHT/2))
-
 
         win.blit(bg,(0,0))
         scr.game_texts(game,win)
-        for entity in game.all_sprites:
-            if entity.faced_up != images[entity.name].seen:
-                images[entity.name].change_image()
-            win.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
-            if entity in game.moving_sprites:
-                images[entity.name].move_towards(game,entity.pos)
-        
+        scr.display_cards(game,images,win,selected_card)
         pygame.display.flip()
     scr.main_menu()
 
@@ -179,7 +170,10 @@ def main_2_player():
         for event in pygame.event.get():
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
-                    run = False
+                    game.paused = True
+                    scr.paused()
+                    run = paused_screen(game,images)
+                    game.paused = False
                 else:
                     if event.unicode not in player.inputs:
                         player = game.players[abs(player.id -1)]
@@ -202,21 +196,11 @@ def main_2_player():
                         game.move_card(old_pile,old_pile)
                 selected_card = None
                 old_pile = None
-                
-        if selected_card:
-            game.moving_sprites.add(selected_card)
-            selected_card.pos = (pygame.Vector2(pygame.mouse.get_pos())[0]-(CARD_WIDTH/2),pygame.Vector2(pygame.mouse.get_pos())[1]-(CARD_HEIGHT/2))
-
 
         win.blit(bg,(0,0))
         scr.game_texts(game,win)
-        for entity in game.all_sprites:
-            if entity.faced_up != images[entity.name].seen:
-                images[entity.name].change_image()
-            win.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
-            if entity in game.moving_sprites:
-                images[entity.name].move_towards(game,entity.pos)
-        
+        scr.display_cards(game,images,win,selected_card)
+
         pygame.display.flip()
     scr.main_menu()
      
@@ -244,7 +228,6 @@ def main_online():
         try:
             game = n.send("get")
         except:
-            print("YEP")
             run = False
             scr.online_quit()
             menu()
@@ -252,7 +235,19 @@ def main_online():
         if game.ready == False:
             scr.waiting_for_game(win,bg)
             for event in pygame.event.get():
-                if event.type == KEYDOWN: # Timeoutes online to be done server side
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    run = False
+                if event.type == KEYDOWN: 
+                    if event.key == K_ESCAPE:
+                        run = False
+        elif game.paused == True:
+            scr.opponent_paused(game,images,win,bg)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    run = False
+                if event.type == KEYDOWN: 
                     if event.key == K_ESCAPE:
                         run = False
         else:
@@ -266,12 +261,15 @@ def main_online():
 
                 if event.type == KEYDOWN: # Timeoutes online to be done server side
                     if event.key == K_ESCAPE:
-                        run = False
+                        n.send("pause")
+                        scr.paused()
+                        run = paused_screen(game,images)
+                        n.send("pause")
                     else:
                         n.send(event.unicode)
                 elif event.type == QUIT:
                     run = False
-                if event.type == MOUSEBUTTONDOWN:
+                if event.type == MOUSEBUTTONDOWN: 
                     if pile_hover != None:
                         selected_card = pile_hover._peek()
                         old_pile = pile_hover
@@ -288,20 +286,44 @@ def main_online():
                     
             win.blit(bg,(0,0))
             scr.game_texts(game,win)
-            for entity in game.all_sprites:
-                if entity.faced_up != images[entity.name].seen:
-                    images[entity.name].change_image()
-                if selected_card:
-                    images[selected_card.name].move_towards(game,(pygame.Vector2(pygame.mouse.get_pos())[0]-(CARD_WIDTH/2),pygame.Vector2(pygame.mouse.get_pos())[1]-(CARD_HEIGHT/2)))
-                elif entity in game.moving_sprites:
-                    images[entity.name].move_towards(game,entity.pos)
-                    
-                win.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
+            scr.display_cards(game,images,win,selected_card)
 
         
         
         pygame.display.flip()
     scr.main_menu()
+
+def paused_screen(game:Game,images):
+    run = True
+    clock = pygame.time.Clock()
+    while run:
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                run = False
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                   return True
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                for button in scr.buttons:
+                    if button.click(pos):
+                        if button.name == "Resume":
+                            return True
+                        elif button.name == "Quit":
+                            return False
+        
+        win.blit(bg,(0,0))
+        for entity in game.all_sprites:
+            win.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
+            
+        haze =pygame.Surface((SCREEN_WIDTH,SCREEN_HEIGHT))
+        haze.fill((128,128,128))
+        haze.set_alpha(200)
+        win.blit(haze,(0,0))
+        scr.display(win)
+        pygame.display.flip()
 
 def menu():
     run = True
@@ -311,7 +333,7 @@ def menu():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                run = False
+                break
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     if scr.screen == "main_menu":
@@ -329,3 +351,6 @@ def menu():
         pygame.display.flip()
 scr.main_menu()
 menu() 
+
+#make waiting for opponent, opponend paused, paused menus
+#Do not make games menus, are either in a menu, or in a game

@@ -14,6 +14,7 @@ class Game():
         self.flip_ready = [False,False]
         self.all_piles = self.center_piles + self.players[0].hand + [self.players[0].side_pile] + self.players[1].hand + [self.players[1].side_pile]
         self.winner = None
+        self.paused = False
 
     def create_sprites(self):
         self.all_sprites = self.deck.create_deck(self.all_sprites)
@@ -205,7 +206,7 @@ class Game():
         if pile._peek() == False: # If pile is empty, end procedure
             return False
         if pile._peek().faced_up == False: #If card is not revealed, reveal card
-            pile._peek().faced_up =True
+            pile._peek().faced_up = True
             return False
         for centre_pile in self.center_piles: # if card can be played, play card
             if self.move_is_valid(pile._peek(),centre_pile._peek()) == True:

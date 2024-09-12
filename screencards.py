@@ -37,6 +37,7 @@ class ScreenCard():
                         Button("Robin",(SCREEN_WIDTH//2 + 450,SCREEN_HEIGHT//2),60),
                         Button("Gilly",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2 + 120),60))
         self.screen = "singleplayer_menu"
+
     def win_card(self,winner,player):
         self.empty()
         if player.id == winner.id:
@@ -73,6 +74,24 @@ class ScreenCard():
         self.texts.add(text)
         self.screen = "Online_quit"
         
+    def paused(self):
+        self.buttons.add(Button("Resume",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2- 120),80),
+                       Button("Quit",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2),80))
+        self.screen = "paused"
+    
+    def opponent_paused(self,game,images,win,bg):
+        self.empty()
+        win.blit(bg,(0,0))
+        self.display_cards(game,images,win,None)
+        haze =pygame.Surface((SCREEN_WIDTH,SCREEN_HEIGHT))
+        haze.fill((128,128,128))
+        haze.set_alpha(200)
+        win.blit(haze,(0,0))
+        text = Text("Opponent Paused...",100)
+        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT//2-text.height//2)
+        text.draw(win)
+
+
     def waiting_for_game(self,win,bg):
         self.empty()
         win.blit(bg,(0,0))
@@ -106,6 +125,19 @@ class ScreenCard():
             text2.set_pos(SCREEN_WIDTH//2+CARD_WIDTH + 20 ,SCREEN_HEIGHT//2 - text2.height//2)
             text1.draw(win)
             text2.draw(win)
+    
+    def display_cards(self,game,images,win,selected_card):
+         for entity in game.all_sprites:
+                if entity.faced_up != images[entity.name].seen:
+                    images[entity.name].change_image()
+                if selected_card:
+                    game.moving_sprites.add(selected_card)
+                    images[selected_card.name].move_towards(game,(pygame.Vector2(pygame.mouse.get_pos())[0]-(CARD_WIDTH/2),pygame.Vector2(pygame.mouse.get_pos())[1]-(CARD_HEIGHT/2)))
+                elif entity in game.moving_sprites:
+                    images[entity.name].move_towards(game,entity.pos)
+                    
+                win.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
+        
         
         
 
