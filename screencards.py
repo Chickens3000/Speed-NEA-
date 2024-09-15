@@ -38,6 +38,11 @@ class ScreenCard():
                         Button("Gilly",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2 + 120),60))
         self.screen = "singleplayer_menu"
 
+    def online_menu(self):
+        self.empty()
+        self.buttons.add(Button("Host",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2- 120),80),
+                       Button("Join",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2),80))
+        self.screen = "online_menu"
     def win_card(self,winner,player):
         self.empty()
         if player.id == winner.id:
@@ -51,15 +56,15 @@ class ScreenCard():
         self.texts.add(text)
         self.screen = "win_card"
 
-    def sever_offline(self):
+    def server_offline(self):
         self.empty()
-        text = Text("Sever is offline at the moment",100)
+        text = Text("Server is offline at the moment",100)
         text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT//2 - text.height//2)
         self.texts.add(text)
         text = Text("Press Esc to return to Menu",30)
         text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT - text.height-40)
         self.texts.add(text)
-        self.screen = "sever_offline"
+        self.screen = "server_offline"
     
     def online_quit(self):
         self.empty()
@@ -92,11 +97,14 @@ class ScreenCard():
         text.draw(win)
 
 
-    def waiting_for_game(self,win,bg):
+    def waiting_for_game(self,win,bg,ip):
         self.empty()
         win.blit(bg,(0,0))
         text = Text("Waiting for opponent...",100)
         text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT//2-text.height//2)
+        text.draw(win)
+        text = Text("IP:"+str(ip),40)
+        text.set_pos(SCREEN_WIDTH - text.width,0)
         text.draw(win)
         text = Text("Press Esc to return to Menu",30)
         text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT - text.height-40)

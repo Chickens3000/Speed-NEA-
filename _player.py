@@ -46,6 +46,7 @@ class Opponent(Player):
 class AdaptiveOpponent(Opponent):
     def __init__(self, difficulty):
         super().__init__(difficulty)
+        print(self.delay)
         self.round_number = 1
 
     def edit_delay(self): 

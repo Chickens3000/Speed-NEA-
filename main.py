@@ -1,23 +1,17 @@
 import pygame
+import random
+import subprocess
+from time import sleep
 from network import Network
 from _game import * 
 from gameobjects import *
 from screencards import *
 from _thread import *
-from time import sleep
-import random
+
 pygame.init() 
 pygame.font.init()
 pygame.display.init()
-from pygame.locals import (
-    SRCALPHA, 
-    RLEACCEL,
-    K_ESCAPE,
-    KEYDOWN,
-    MOUSEBUTTONDOWN,
-    MOUSEBUTTONUP,
-    QUIT,
-)
+from pygame.locals import *
 
 win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 bg = pygame.image.load("./images/backround.jpg")
@@ -25,6 +19,9 @@ bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
 pygame.display.set_caption("Game")
 scr = ScreenCard() 
 images = {}
+
+def run_server_script():
+    subprocess.Popen(["python","Server.py"])
 
 def get_pile_under_mouse(game:Game):
     x,y = pygame.Vector2(pygame.mouse.get_pos())
@@ -55,8 +52,12 @@ def button_action(text):
         scr.empty()
         main_2_player()
     elif text == "Online":
+        scr.online_menu()
+    elif text == "Host":
+        main_online("Host")
+    elif text == "Join":
         scr.empty()
-        main_online()
+        join_menu()
     elif text == "Theo":
         scr.empty()
         main_1_player(5000)
@@ -106,7 +107,7 @@ def main_1_player(delay):
         if game.players[1].delay != delay:
             pygame.time.set_timer(AI_MOVE,game.players[1].delay)
             pygame.time.set_timer(AI_FLIP,game.players[1].delay//2 + random.randint(10,25)*17)
-
+            delay = game.players[1].delay
 
         for event in pygame.event.get():
             if event.type == KEYDOWN:
@@ -121,6 +122,7 @@ def main_1_player(delay):
                         if _return != False:
                             start_new_thread(time_out,(player,game,images[_return._peek().name],_return._peek().pos))
             if event.type == AI_FLIP:
+                print("AI_FLIP")
                 game.players[1].flip()
             if event.type == AI_MOVE:
                 game.players[1].make_move(game)
@@ -204,11 +206,14 @@ def main_2_player():
         pygame.display.flip()
     scr.main_menu()
      
-def main_online():
+def main_online(HostIP):
     game : Game
     run = True
     clock = pygame.time.Clock()
     n = Network()
+    if HostIP == "Host":
+        run_server_script()
+    ip = n.set_ip(HostIP)
     player = n.getP()
     selected_card = None
     old_pile = None
@@ -218,9 +223,7 @@ def main_online():
             images[card.name] = Image(card)
             images["red_joker"] = Image(Joker((99,"J")))
     except:
-        scr.sever_offline()
-        menu()
-        run = False
+        return False
 
     while run:
         
@@ -233,7 +236,7 @@ def main_online():
             menu()
             break
         if game.ready == False:
-            scr.waiting_for_game(win,bg)
+            scr.waiting_for_game(win,bg,ip)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -292,6 +295,7 @@ def main_online():
         
         pygame.display.flip()
     scr.main_menu()
+    return True
 
 def paused_screen(game:Game,images):
     run = True
@@ -325,6 +329,50 @@ def paused_screen(game:Game,images):
         scr.display(win)
         pygame.display.flip()
 
+def join_menu():
+    scr.empty()
+    run = True
+    clock = pygame.time.Clock()
+    ip_valid = False
+    text = ""
+    while ip_valid == False:
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                break
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    if scr.screen == "main_menu":
+                        exit()
+                    else:
+                        scr.main_menu()
+                        menu()
+                elif event.key == K_BACKSPACE:
+                    text = text[:-1]
+                elif event.key == K_RETURN or event.key == K_KP_ENTER:
+                    ip_valid = main_online(text)
+                    if ip_valid == False:
+                        text = ""
+                        invalid_text = Text("Server with this IP does not exist",60)
+                        invalid_text.set_pos(SCREEN_WIDTH//2-invalid_text.width//2,SCREEN_HEIGHT//2 - invalid_text.height//2 - 200)
+                        scr.texts.add(invalid_text)
+                    else:
+                        ip_valid = True
+                elif event.key == K_SPACE or event.unicode == "":
+                    pass
+                else:
+                    text += event.unicode
+
+
+
+        win.blit(bg,(0,0))
+        typed = Text("IP:"+text,80)
+        typed.set_pos(SCREEN_WIDTH//2-typed.width//2,SCREEN_HEIGHT//2 - typed.height//2)
+        typed.draw(win)
+        scr.display(win)
+        pygame.display.flip()
+
 def menu():
     run = True
     clock = pygame.time.Clock()
@@ -354,3 +402,4 @@ menu()
 
 #make waiting for opponent, opponend paused, paused menus
 #Do not make games menus, are either in a menu, or in a game
+
