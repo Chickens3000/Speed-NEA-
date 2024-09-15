@@ -4,22 +4,10 @@ import pickle
 from _game import * 
 from gameobjects import *
 from time import sleep
-server = socket.gethostbyname(socket.gethostname())
 
-port = 5555
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-try:
-    s.bind((server, port))
-except socket.error as e:
-    print(str(e))
-
-s.listen(2)
-print("Waiting for a connection, Server Started")
-
-connected = set()
 games = {}
 idCount = 0
+
 def time_out(player : Player, card: Card, start_pos):
     player.timed_out = True
     sleep(0.1)
@@ -94,11 +82,22 @@ def threaded_client(conn, p, gameId):
     conn.close()
 
 
+server = socket.gethostbyname(socket.gethostname())
+port = 5050
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+try:
+    s.bind((server, port))
+except socket.error as e:
+    print(str(e))
+
+s.listen(2)
+print("Waiting for a connection, Server Started")
+
+connected = set()
 
 while True:
     conn, addr = s.accept()
     print("Connected to:", addr)
-
     idCount += 1
     p = 0
     gameId = (idCount - 1)//2
