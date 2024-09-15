@@ -122,7 +122,6 @@ def main_1_player(delay):
                         if _return != False:
                             start_new_thread(time_out,(player,game,images[_return._peek().name],_return._peek().pos))
             if event.type == AI_FLIP:
-                print("AI_FLIP")
                 game.players[1].flip()
             if event.type == AI_MOVE:
                 game.players[1].make_move(game)
@@ -240,7 +239,7 @@ def main_online(HostIP):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    run = False
+                    exit()
                 if event.type == KEYDOWN: 
                     if event.key == K_ESCAPE:
                         run = False
@@ -249,7 +248,7 @@ def main_online(HostIP):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    run = False
+                    exit()
                 if event.type == KEYDOWN: 
                     if event.key == K_ESCAPE:
                         run = False
@@ -305,7 +304,7 @@ def paused_screen(game:Game,images):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                run = False
+                exit()
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                    return True
@@ -340,7 +339,7 @@ def join_menu():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                break
+                exit()
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     if scr.screen == "main_menu":
@@ -381,7 +380,7 @@ def menu():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                break
+                exit()
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     if scr.screen == "main_menu":
