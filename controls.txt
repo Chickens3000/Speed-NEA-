@@ -1,0 +1,14 @@
+p1_pile1 : q
+p1_pile2 : w
+p1_pile3 : e
+p1_pile4 : r
+p1_pile5 : g
+p1_slam1 : t 
+p1_slam2 : y
+p2_pile1 : n
+p2_pile2 : j
+p2_pile3 : k
+p2_pile4 : l
+p2_pile5 : ;
+p2_slam1 : b 
+p2_slam2 : h

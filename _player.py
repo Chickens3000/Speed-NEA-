@@ -6,17 +6,35 @@ class Player:
         self.id = id
         self.empty_hand = False
         self.timed_out = False
+        self.controls = self.set_controls()
         if self.id == 0:
-            self.hand = [Pile(str(id)+"-"+str(i),8,((SCREEN_WIDTH//2 -450-CARD_WIDTH//2 + 225 * i),(SCREEN_HEIGHT - CARD_HEIGHT - 30))) for i in range(5)] #extra 42 allows far stacked cards and 10 pixel leeway
-            self.side_pile = Pile("side"+(str(id)),36,(SCREEN_WIDTH//2-(450+CARD_WIDTH//2),(SCREEN_HEIGHT - 2* CARD_HEIGHT - 2* 30)))
+            self.hand = [Pile(str(id)+"-"+str(i),8,
+                              ((SCREEN_WIDTH//2 -450-CARD_WIDTH//2 + 225 * i),
+                               (SCREEN_HEIGHT - CARD_HEIGHT - 30))) for i in range(5)] #extra 42 allows far stacked cards and 10 pixel leeway
+            self.side_pile = Pile("side"+(str(id)),36,
+                                  (SCREEN_WIDTH//2-(450+CARD_WIDTH//2),
+                                  (SCREEN_HEIGHT - 2* CARD_HEIGHT - 2* 30)))
+            
             self.cards = Pile(str(id)+"cards",52,(1300,800))
-            self.inputs = ["q","w","e","r","g","t","y"]
+            self.inputs = [self.controls["p1_pile1"],self.controls["p1_pile2"],self.controls["p1_pile3"],
+                           self.controls["p1_pile4"],self.controls["p1_pile5"],self.controls["p1_slam1"],
+                           self.controls["p1_slam2"]]
         else:
             self.hand = [Pile(str(id)+"-"+str(i),8,((SCREEN_WIDTH//2 -450-CARD_WIDTH//2 + 225 * i),10)) for i in range(5)]
             self.side_pile = Pile("side"+(str(id)),36,(SCREEN_WIDTH//2+(450-CARD_WIDTH//2),(SCREEN_HEIGHT - 2* CARD_HEIGHT - 2* 30))) 
             self.cards = Pile(str(id)+"cards",52,(1300,-100))
-            self.inputs = ["n","j","k","l",";","b","h"]
+            self.inputs = [self.controls["p2_pile1"],self.controls["p2_pile2"],self.controls["p2_pile3"],
+                           self.controls["p2_pile4"],self.controls["p2_pile5"],self.controls["p2_slam1"],
+                           self.controls["p2_slam2"]]
 
+    def set_controls(self):
+        controls = {}
+        with open("controls.txt",'r') as file:
+            for line in file:
+                input, value = line.strip().split(':',1)
+                controls[input.strip()] = value.strip()
+        return controls
+        
 class Opponent(Player):
     def __init__(self,difficulty):
         super(Opponent,self).__init__(1)

@@ -1,0 +1,3 @@
+play_same_number : False
+play_same_colour : True
+shuffle_between_rounds : True

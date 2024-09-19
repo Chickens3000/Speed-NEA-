@@ -96,7 +96,6 @@ def main_1_player(delay):
         images[card.name] = Image(card)
     images["red_joker"] = Image(Joker((99,"J")))
     while run:
-        
         pile_hover = get_pile_under_mouse(game)
         clock.tick(60)
         if game.winner:

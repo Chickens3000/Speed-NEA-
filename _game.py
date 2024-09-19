@@ -15,6 +15,7 @@ class Game():
         self.all_piles = self.center_piles + self.players[0].hand + [self.players[0].side_pile] + self.players[1].hand + [self.players[1].side_pile]
         self.winner = None
         self.paused = False
+        self.rules = self.set_rules()
 
     def create_sprites(self):
         self.all_sprites = self.deck.create_deck(self.all_sprites)
@@ -31,10 +32,19 @@ class Game():
         self.next_round()
         
     def next_round(self):
+        print("shuffle",self.rules["shuffle_between_rounds"])
+        if self.rules["shuffle_between_rounds"] == "True":
+            print("RUNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN")
+            for player in self.players:
+                cards = player.cards.contents[0:player.cards.stack_pointer + 1]
+                random.shuffle(cards)
+                player.cards.contents = [*cards,*player.cards.contents[player.cards.stack_pointer + 1:]]
+    
         if (self.players[0].cards.stack_pointer + 1) > 15 and (self.players[1].cards.stack_pointer + 1) > 15:
             self.round_setup()
         else:
             self.endgame_round()
+    
     def round_setup(self):
         for player in self.players:
             for i in range(0,5):
@@ -227,8 +237,20 @@ class Game():
         return pile
 
     def move_is_valid(self,card:Card,top_card:Card):
-        if abs(top_card.code[0] - card.code[0]) == 1 or abs(top_card.code[0] - card.code[0])== 12:
+        if self.rules["play_same_colour"] == "False" and self.same_colour(top_card,card) == True:
+            return False
+        if self.rules["play_same_number"] == "True" and top_card.code[0] == card.code[0]:
             return True
+        elif abs(top_card.code[0] - card.code[0]) == 1 or abs(top_card.code[0] - card.code[0]) == 12:
+            return True
+
+    def same_colour(self,card1,card2): #Doesnt work
+        if (card1.code[1] == "H" or card1.code[1] == "D") and (card2.code[1] == "H" or card2.code[1] == "D"):
+            return True
+        if (card1.code[1] == "C" or card1.code[1] == "S") and (card2.code[1] == "S" or card2.code[1] == "C"):
+            return True
+        return False
+
         
     def stack(self,pile:Pile ,player:Player):
         for hand in player.hand:
@@ -310,6 +332,14 @@ class Game():
             if stack._peek() != False:
                 return False
         return True
+
+    def set_rules(self):
+        rules = {}
+        with open("rules.txt",'r') as file:
+            for line in file:
+                rule, value = line.strip().split(':',1)
+                rules[rule.strip()] = value.strip()
+        return rules
 
 
         

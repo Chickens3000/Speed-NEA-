@@ -127,8 +127,8 @@ class ScreenCard():
             text.set_pos((game.players[1].side_pile.pos[0] - text.width - 20),game.players[1].side_pile.pos[1])
             text.draw(win)
         if game.empty_hand(game.players[0]) == True or game.empty_hand(game.players[1]) == True:
-            text1 = Text("T / B",80)
-            text2 = Text("Y / H",80)
+            text1 = Text(game.players[0].inputs[5] + "/" +game.players[1].inputs[5],80)
+            text2 = Text(game.players[0].inputs[6] + "/" +game.players[1].inputs[6           ],80)
             text1.set_pos(SCREEN_WIDTH//2-CARD_WIDTH - text1.width - 20,SCREEN_HEIGHT//2 - text1.height//2)
             text2.set_pos(SCREEN_WIDTH//2+CARD_WIDTH + 20 ,SCREEN_HEIGHT//2 - text2.height//2)
             text1.draw(win)
