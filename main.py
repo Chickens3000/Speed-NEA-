@@ -234,7 +234,10 @@ def main_online(HostIP):
             menu()
             break
         if game.ready == False:
-            scr.waiting_for_game(win,bg,ip)
+            if player.id == 0:
+                scr.waiting_for_game(win,bg,ip)
+            else:
+                scr.press_to_start(win,bg)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -242,6 +245,8 @@ def main_online(HostIP):
                 if event.type == KEYDOWN: 
                     if event.key == K_ESCAPE:
                         run = False
+                    else:
+                        n.send(event.unicode)
         elif game.paused == True:
             scr.opponent_paused(game,images,win,bg)
             for event in pygame.event.get():

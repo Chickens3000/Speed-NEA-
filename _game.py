@@ -32,9 +32,7 @@ class Game():
         self.next_round()
         
     def next_round(self):
-        print("shuffle",self.rules["shuffle_between_rounds"])
         if self.rules["shuffle_between_rounds"] == "True":
-            print("RUNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN")
             for player in self.players:
                 cards = player.cards.contents[0:player.cards.stack_pointer + 1]
                 random.shuffle(cards)

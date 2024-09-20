@@ -31,10 +31,10 @@ def threaded_client(conn, p, gameId):
     global idCount
     conn.sendall(pickle.dumps(games[gameId].players[p]))
 
+
     while True:
         try:
             data = conn.recv(2048).decode()
-
             if gameId in games:
                 game= games[gameId]
                 player = game.players[p]
@@ -58,7 +58,11 @@ def threaded_client(conn, p, gameId):
                                 if data[7:] == pile.name:
                                     game.move_card(pile,pile)
                         else:
-                            if player.timed_out == False:
+                            if games[gameId].ready == False:# waits until first set of data from p1 until starting game
+                                if p == 1:
+                                    games[gameId].ready = True
+                                    games[gameId].start_game()
+                            elif player.timed_out == False:
                                 _return = game.keyboard_update(player,data)
                                 if _return != False:
                                     start_new_thread(time_out,(player,_return._peek(),_return._peek().pos))
@@ -69,7 +73,8 @@ def threaded_client(conn, p, gameId):
                 
             else:
                 break
-        except:
+        except Exception as e:
+            print(e)
             break
 
     print("Lost connection")
@@ -106,9 +111,6 @@ while True:
         print("Creating a new game...")
         games[gameId].create_sprites()
     else:
-        games[gameId].ready = True
-        games[gameId].start_game()
-        
         p = 1
 
 

@@ -111,6 +111,17 @@ class ScreenCard():
         text.draw(win)
         self.screen = "waiting_for_game"
 
+    def press_to_start(self,win,bg):
+        self.empty()
+        win.blit(bg,(0,0))
+        text = Text("Press any key to start",80)
+        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT//2-text.height//2)
+        text.draw(win)
+        text = Text("Press Esc to return to Menu",30)
+        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT - text.height-40)
+        text.draw(win)
+        self.screen = "press_to_start"
+
     def display(self,win):
         for item in self.texts:
             item.draw(win)
