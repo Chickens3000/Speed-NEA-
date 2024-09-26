@@ -14,15 +14,21 @@ class ScreenCard():
         self.texts = pygame.sprite.Group()
         self.buttons = pygame.sprite.Group()
         self.screen = "main_menu"
+        self.haze =pygame.Surface((SCREEN_WIDTH,SCREEN_HEIGHT))
+        self.haze.fill((128,128,128))
+        self.haze.set_alpha(200)
+        self.haze_bool = False
     
     def empty(self):
+        self.haze_bool = False
         self.texts.empty()
         self.buttons.empty()
 
     def main_menu(self):
         self.empty()
         self.buttons.add(Button("Singleplayer",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2- 120),80),
-                       Button("2 Player",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2),80))
+                       Button("2 Player",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2),80),
+                       Button("Settings",(70,SCREEN_HEIGHT- 50),60))
         self.screen = "main_menu"
     def two_player_menu(self):
         self.empty()
@@ -37,6 +43,46 @@ class ScreenCard():
                         Button("Robin",(SCREEN_WIDTH//2 + 450,SCREEN_HEIGHT//2),60),
                         Button("Gilly",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2 + 120),60))
         self.screen = "singleplayer_menu"
+
+    def settings(self,win):
+        self.empty()
+        counter = 0
+        text = Text("Player1",80)
+        text.set_pos(SCREEN_WIDTH//2-text.width//2,10)
+        self.texts.add(text)
+        text = Text("Player2",80)
+        text.set_pos(SCREEN_WIDTH//2-text.width//2,SCREEN_HEIGHT//2 - text.height//2)
+        self.texts.add(text)
+        with open("controls.txt",'r') as file:
+            for line in file:
+                input, key = line.strip().split(':',1)
+                if input[0:2] == "p1":
+                    text = Text(input.strip()[3:],60)
+                    text.set_pos((SCREEN_WIDTH//2 -450-text.width//2 + 150 * counter),
+                               100)
+                    self.texts.add(text)
+                    self.buttons.add(Setting_Button(line,(SCREEN_WIDTH//2 -450 + 150 * counter,200),60,))
+                elif input[0:2] == "p2":
+                    text = Text(line[3:8],60)
+                    text.set_pos((SCREEN_WIDTH//2 -450-text.width//2 + 150 * counter),
+                               (SCREEN_HEIGHT//2 + 100))
+                    self.texts.add(text)
+                    self.buttons.add(Setting_Button(line,(SCREEN_WIDTH//2 -450 + 150 * counter, SCREEN_HEIGHT//2 + 200),60,))
+
+                counter += 1
+                if counter ==7:
+                    counter = 0
+        self.haze_bool = True
+        self.screen = "settings"
+    
+    def change_keybind_screen(self):
+        text = Text("Press any key to change",80)
+        text.set_pos(SCREEN_WIDTH//2-text.width//2,SCREEN_HEIGHT//2 - text.height//2)
+        self.texts.add(text)
+        text = Text("Press Esc to return to Menu",30)
+        text.set_pos(SCREEN_WIDTH//2 - text.width//2,SCREEN_HEIGHT - text.height-40)
+        self.texts.add(text)
+        self.screen= "change_keybind_screen"
 
     def online_menu(self):
         self.empty()
@@ -123,6 +169,8 @@ class ScreenCard():
         self.screen = "press_to_start"
 
     def display(self,win):
+        if self.haze_bool == True:
+            win.blit(self.haze,(0,0))
         for item in self.texts:
             item.draw(win)
         for item in self.buttons:
@@ -171,11 +219,11 @@ class Button(pygame.sprite.Sprite):
         font = pygame.font.SysFont(FONT,font_size )
         self.text = font.render(name, 1, (255,255,255))
         self.width, self.height = self.text.get_width() + 70,self.text.get_height() + 20
-        self.x,self.y = self.repos(pos)
+        self.x,self.y = pos[0] - self.text.get_width()//2,pos[1] -self.text.get_height()//2
 
     def draw(self, win):
-        pygame.draw.rect(win,(255,255,255),(self.x, self.y,self.width, self.height),5,10)
-        win.blit(self.text, (self.x + round(self.width/2) - round(self.text.get_width()/2), self.y + round(self.height/2) - round(self.text.get_height()/2)))
+        pygame.draw.rect(win,(255,255,255),(self.x -35, self.y -10,self.width, self.height),5,10)
+        win.blit(self.text, (self.x , self.y ))
 
     def click(self, pos):
         x1 = pos[0]
@@ -185,11 +233,20 @@ class Button(pygame.sprite.Sprite):
         else:
             return False
 
-    def repos(self,pos):
-        new_pos = (pos[0]- self.width//2,pos[1]- self.height//2)
-        return new_pos
+class Setting_Button(Button):
+    def __init__(self, line,pos,font_size):
+        self.line = line
+        input, key = line.strip().split(':',1)
+        super(Setting_Button,self).__init__(key, pos,font_size)
 
-
+    def click(self,pos):
+        x1 = pos[0]
+        y1 = pos[1]
+        if self.x <= x1 <= self.x + self.width and self.y <= y1 <= self.y + self.height:
+            return True
+        else:
+            return False
+        
 
 class Text(pygame.sprite.Sprite):
 

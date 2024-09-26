@@ -43,11 +43,16 @@ def time_out(player : Player,game:Game, card:Image, start_pos):
   
     player.timed_out = False
 
-def button_action(text):
-    if text == "Singleplayer":
+def button_action(button):
+    text = button.name
+    if button.__class__ == Setting_Button:
+        change_keybind(button)
+    elif text == "Singleplayer":
         scr.singleplayer_menu()
     elif text == "2 Player":
         scr.two_player_menu()
+    elif text == "Settings":
+        scr.settings(win)
     elif text == "Local":
         scr.empty()
         main_2_player()
@@ -376,6 +381,40 @@ def join_menu():
         scr.display(win)
         pygame.display.flip()
 
+def change_keybind(button):
+    scr.empty()
+    scr.change_keybind_screen()
+    run = True
+    clock = pygame.time.Clock()
+    while run:
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == KEYDOWN:
+                new_key = event.unicode
+                run = False
+        
+        win.blit(bg,(0,0))
+        scr.display(win)
+        pygame.display.flip()
+
+    
+    with open("controls.txt",'r') as file:
+        data = file.readlines()
+    with open("controls.txt","w") as file:
+         # Ensures only one key is changed
+        for line in data:
+            
+            if button.line == line:
+                input, key = line.strip().split(':',1)
+                file.write(input + ":"+ new_key + "\n")
+                changed = True
+            else:
+                file.write(line)
+    scr.settings(win)
+        
 def menu():
     run = True
     clock = pygame.time.Clock()
@@ -395,7 +434,7 @@ def menu():
                 pos = pygame.mouse.get_pos()
                 for button in scr.buttons:
                     if button.click(pos):
-                        button_action(button.name)
+                        button_action(button)
         
         win.blit(bg,(0,0))
         scr.display(win)
