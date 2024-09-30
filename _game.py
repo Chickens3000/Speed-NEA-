@@ -267,8 +267,6 @@ class Game():
         for i in range(pile.stack_pointer+1):
             if pile.contents[i].faced_up == True:
                 count+= 1
-        if count == pile.stack_pointer +1:
-            return False
         for hand in player.hand:
             if hand._peek() == False:
                 return hand
@@ -283,9 +281,9 @@ class Game():
                     return stack
             if stack._peek().faced_up == False: #If card is not revealed, reveal card
                 return stack
-            if self.stack(stack,player) != False: 
+            if self.stack(stack,player) != False : 
                 return stack
-            if self.shift_cards(stack,player) != False:# Moves cards to empty pile if possible 
+            if self.shift_cards(stack,player) != False and stack.contents[0].faced_up == False:# Moves cards to empty pile if possible 
                 return stack
         
         if self.empty_hand(player) == True:

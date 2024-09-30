@@ -28,7 +28,7 @@ class ScreenCard():
         self.empty()
         self.buttons.add(Button("Singleplayer",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2- 120),80),
                        Button("2 Player",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2),80),
-                       Button("Settings",(70,SCREEN_HEIGHT- 50),60))
+                       Button("Settings",(160,SCREEN_HEIGHT- 80),60))
         self.screen = "main_menu"
     def two_player_menu(self):
         self.empty()
@@ -47,27 +47,26 @@ class ScreenCard():
     def settings(self,win):
         self.empty()
         counter = 0
-        text = Text("Player1",80)
+        text = Text("Settings",80)
         text.set_pos(SCREEN_WIDTH//2-text.width//2,10)
         self.texts.add(text)
-        text = Text("Player2",80)
-        text.set_pos(SCREEN_WIDTH//2-text.width//2,SCREEN_HEIGHT//2 - text.height//2)
+        text = Text("P1",60)
+        text.set_pos(30,180-text.height//2)
+        self.texts.add(text)
+        text = Text("P2",60)
+        text.set_pos(30,270-text.height//2)
         self.texts.add(text)
         with open("controls.txt",'r') as file:
             for line in file:
                 input, key = line.strip().split(':',1)
                 if input[0:2] == "p1":
-                    text = Text(input.strip()[3:],60)
+                    text = Text(input.strip()[3:],50)
                     text.set_pos((SCREEN_WIDTH//2 -450-text.width//2 + 150 * counter),
-                               100)
+                               90)
                     self.texts.add(text)
-                    self.buttons.add(Setting_Button(line,(SCREEN_WIDTH//2 -450 + 150 * counter,200),60,))
+                    self.buttons.add(Setting_Button(line,(SCREEN_WIDTH//2 -450 + 150 * counter,180),40))
                 elif input[0:2] == "p2":
-                    text = Text(line[3:8],60)
-                    text.set_pos((SCREEN_WIDTH//2 -450-text.width//2 + 150 * counter),
-                               (SCREEN_HEIGHT//2 + 100))
-                    self.texts.add(text)
-                    self.buttons.add(Setting_Button(line,(SCREEN_WIDTH//2 -450 + 150 * counter, SCREEN_HEIGHT//2 + 200),60,))
+                    self.buttons.add(Setting_Button(line,(SCREEN_WIDTH//2 -450 + 150 * counter, 270),40))
 
                 counter += 1
                 if counter ==7:
