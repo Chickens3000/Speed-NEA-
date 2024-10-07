@@ -40,7 +40,6 @@ def time_out(player : Player,game:Game, card:Image, start_pos):
         card.move_towards(game, (start_pos[0]-10,start_pos[1]))
         sleep(0.05)
         card.move_towards(game,start_pos)
-  
     player.timed_out = False
 
 def button_action(button):
@@ -381,36 +380,60 @@ def join_menu():
         scr.display(win)
         pygame.display.flip()
 
-def change_keybind(button):
-    scr.empty()
-    scr.change_keybind_screen()
-    run = True
-    clock = pygame.time.Clock()
-    while run:
-        clock.tick(60)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-            if event.type == KEYDOWN:
-                new_key = event.unicode
-                run = False
-        
-        win.blit(bg,(0,0))
-        scr.display(win)
-        pygame.display.flip()
-
-    
-    with open("controls.txt",'r') as file:
-        data = file.readlines()
-    with open("controls.txt","w") as file:
-         # Ensures only one key is changed
-        for line in data:
+def change_keybind(button:Setting_Button):
+    File = "rules.txt"
+    if button.input == "max_cards_for_joker":
+        options = ["3","5","10","15"]
+        i = options.index(button.key)
+        if i== 3:
+            new_value = options[0]
+        else:
+            new_value = options[i + 1]
+    elif button.name == "Reset to Defaults":
+        with open("default.txt",'r') as file:
+            data = file.readlines()
+        with open("rules.txt","w") as file:
+            for line in data:
+                if line.strip() == "controls":
+                    data = data[data.index(line) + 1:]
+                    break
+                else:
+                    file.write(line)
+        with open("controls.txt","w") as file:
+            for line in data:
+                    file.write(line)
+    elif button.key == "True":
+        new_value = False
+    elif button.key == "False":
+        new_value = True
+    else:
+        File = "controls.txt"
+        scr.empty()
+        scr.change_keybind_screen()
+        run = True
+        clock = pygame.time.Clock()
+        while run:
+            clock.tick(60)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                if event.type == KEYDOWN:
+                    new_value = event.unicode
+                    run = False
             
+            win.blit(bg,(0,0))
+            scr.display(win)
+            pygame.display.flip()
+
+        
+    with open(File,'r') as file:
+        data = file.readlines()
+    with open(File,"w") as file:
+        for line in data:
             if button.line == line:
-                input, key = line.strip().split(':',1)
-                file.write(input + ":"+ new_key + "\n")
-                changed = True
+                input, value = line.strip().split(':',1)
+                file.write(input + ":"+ str(new_value) + "\n")
             else:
                 file.write(line)
     scr.settings(win)

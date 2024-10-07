@@ -1,3 +1,4 @@
-play_same_number : False
-play_same_colour : True
-shuffle_between_rounds : True
+play_same_number :False
+play_same_colour :True
+shuffle_btwn_rounds :False
+max_cards_for_joker :10

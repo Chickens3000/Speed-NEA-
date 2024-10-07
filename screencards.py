@@ -71,6 +71,20 @@ class ScreenCard():
                 counter += 1
                 if counter ==7:
                     counter = 0
+        with open("rules.txt",'r') as file:
+            counter = 0
+            for line in file:
+                input, key = line.strip().split(':',1)
+                input = input.replace("_"," ")
+                text = Text(input.strip(),50)
+                
+                text.set_pos(20 + (400-text.width)//2 + SCREEN_WIDTH//2 * (counter % 2),
+                             SCREEN_HEIGHT//2 + 75 * (counter //2))
+                self.texts.add(text)
+                self.buttons.add(Setting_Button(line,(SCREEN_WIDTH//2  * (counter % 2 + 1) - 90, SCREEN_HEIGHT//2 + 75 * (counter //2)+30) ,40))
+
+                counter += 1
+        self.buttons.add(Setting_Button(":Reset to Defaults",(SCREEN_WIDTH//2 , SCREEN_HEIGHT -100) ,60))
         self.haze_bool = True
         self.screen = "settings"
     
@@ -235,8 +249,9 @@ class Button(pygame.sprite.Sprite):
 class Setting_Button(Button):
     def __init__(self, line,pos,font_size):
         self.line = line
-        input, key = line.strip().split(':',1)
-        super(Setting_Button,self).__init__(key, pos,font_size)
+        self.input, self.key = line.strip().split(':',1)
+        self.input, self.key = self.input.strip(), self.key.strip()
+        super(Setting_Button,self).__init__(self.key, pos,font_size)
 
     def click(self,pos):
         x1 = pos[0]
