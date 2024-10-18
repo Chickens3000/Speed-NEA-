@@ -32,12 +32,11 @@ class Game():
         self.next_round()
         
     def next_round(self):
-        if self.rules["shuffle_between_rounds"] == "True":
+        if self.rules["shuffle_btwn_rounds"] == "True":
             for player in self.players:
                 cards = player.cards.contents[0:player.cards.stack_pointer + 1]
                 random.shuffle(cards)
                 player.cards.contents = [*cards,*player.cards.contents[player.cards.stack_pointer + 1:]]
-    
         if (self.players[0].cards.stack_pointer + 1) > 15 and (self.players[1].cards.stack_pointer + 1) > 15:
             self.round_setup()
         else:
@@ -55,7 +54,7 @@ class Game():
     def endgame_round(self):
         borrow,borrower_id = False,0
         for player in self.players:
-            if (player.cards.stack_pointer + 1) <=15 and (player.cards.stack_pointer + 1) >= 10:
+            if (player.cards.stack_pointer + 1) <=15 and (player.cards.stack_pointer + 1) > int(self.rules["max_cards_for_joker"]):
                 borrow,borrower_id = True,player.id
                 for i in range(0,5):
                     for x in range(5-i):
@@ -63,7 +62,7 @@ class Game():
                     if player.hand[i].is_empty():
                         break
                     player.hand[i]._peek().faced_up = True
-            elif (player.cards.stack_pointer + 1) < 10:
+            elif (player.cards.stack_pointer + 1) <= int(self.rules["max_cards_for_joker"]):
                 for i in range(0,5):
                     for x in range(5-i):
                         self.move_card(player.cards,player.hand[i])
@@ -188,7 +187,6 @@ class Game():
 
 
     def keyboard_update(self,player: Player,data: str): # returns pile if input is valid but not valid move
-        
         if data == player.inputs[0]:
             pile = player.hand[0]
         elif data ==  player.inputs[1]:
@@ -227,8 +225,8 @@ class Game():
                     self.move_card(pile,hand)
             return False
         
-        if self.shift_cards(pile,player) != False:# Moves cards to empty pile if possible 
-            hand  = self.shift_cards(pile,player)
+        if self.shift_cards(player) != False:# Moves cards to empty pile if possible 
+            hand  = self.shift_cards(player)
             while pile._peek() != False and pile._peek().faced_up == True:
                     self.move_card(pile,hand)
             return False
@@ -262,13 +260,7 @@ class Game():
             
         return False
 
-    def shift_cards(self, pile:Pile, player:Player):
-        count = 0 
-        for i in range(pile.stack_pointer+1):
-            if pile.contents[i].faced_up == True:
-                count+= 1
-        if count == pile.stack_pointer +1:
-            return False
+    def shift_cards(self, player:Player):
         for hand in player.hand:
             if hand._peek() == False:
                 return hand
@@ -283,9 +275,9 @@ class Game():
                     return stack
             if stack._peek().faced_up == False: #If card is not revealed, reveal card
                 return stack
-            if self.stack(stack,player) != False: 
+            if self.stack(stack,player) != False : 
                 return stack
-            if self.shift_cards(stack,player) != False:# Moves cards to empty pile if possible 
+            if self.shift_cards(player) != False and stack.contents[0].faced_up == False:# Moves cards to empty pile if possible 
                 return stack
         
         if self.empty_hand(player) == True:

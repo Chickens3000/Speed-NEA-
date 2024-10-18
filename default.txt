@@ -1,3 +1,8 @@
+play_same_number :False
+play_same_colour :True
+shuffle_btwn_rounds :False
+max_cards_for_joker :10
+controls
 p1_pile1 :q
 p1_pile2 :w
 p1_pile3 :e
