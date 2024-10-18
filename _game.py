@@ -187,7 +187,6 @@ class Game():
 
 
     def keyboard_update(self,player: Player,data: str): # returns pile if input is valid but not valid move
-        
         if data == player.inputs[0]:
             pile = player.hand[0]
         elif data ==  player.inputs[1]:
@@ -226,8 +225,8 @@ class Game():
                     self.move_card(pile,hand)
             return False
         
-        if self.shift_cards(pile,player) != False:# Moves cards to empty pile if possible 
-            hand  = self.shift_cards(pile,player)
+        if self.shift_cards(player) != False:# Moves cards to empty pile if possible 
+            hand  = self.shift_cards(player)
             while pile._peek() != False and pile._peek().faced_up == True:
                     self.move_card(pile,hand)
             return False
@@ -261,11 +260,7 @@ class Game():
             
         return False
 
-    def shift_cards(self, pile:Pile, player:Player):
-        count = 0 
-        for i in range(pile.stack_pointer+1):
-            if pile.contents[i].faced_up == True:
-                count+= 1
+    def shift_cards(self, player:Player):
         for hand in player.hand:
             if hand._peek() == False:
                 return hand
@@ -282,7 +277,7 @@ class Game():
                 return stack
             if self.stack(stack,player) != False : 
                 return stack
-            if self.shift_cards(stack,player) != False and stack.contents[0].faced_up == False:# Moves cards to empty pile if possible 
+            if self.shift_cards(player) != False and stack.contents[0].faced_up == False:# Moves cards to empty pile if possible 
                 return stack
         
         if self.empty_hand(player) == True:

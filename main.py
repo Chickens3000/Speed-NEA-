@@ -1,23 +1,27 @@
+#external imports
 import pygame
 import random
 import subprocess
 from time import sleep
+from _thread import *
+
+#Internal imports
 from network import Network
 from _game import * 
 from gameobjects import *
-from screencards import *
-from _thread import *
+from display import *
 
+#Pygame initialisation
 pygame.init() 
 pygame.font.init()
 pygame.display.init()
 from pygame.locals import *
-
 win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 bg = pygame.image.load("./images/backround.jpg")
 bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
-pygame.display.set_caption("Game")
-scr = ScreenCard() 
+pygame.display.set_caption("Speed/Split: You decide")
+
+scr = Display() 
 images = {}
 
 def run_server_script():
@@ -45,7 +49,7 @@ def time_out(player : Player,game:Game, card:Image, start_pos):
 def button_action(button):
     text = button.name
     if button.__class__ == Setting_Button:
-        change_keybind(button)
+        change_setting(button)
     elif text == "Singleplayer":
         scr.singleplayer_menu()
     elif text == "2 Player":
@@ -79,74 +83,109 @@ def button_action(button):
         main_1_player(-1)
 
 def main_1_player(delay):
+    # Initial setup
     run = True
     clock = pygame.time.Clock()
     game = Game(0)
     player = game.players[0]
+
+    # Determine opponent type based on delay
     if delay == -1:
         game.players[1] = AdaptiveOpponent(2000)
     else:
         game.players[1] = Opponent(delay)
-    
+
+    # Initialize selected card and pile variables
     selected_card = None
     old_pile = None
+
+    # Custom events for AI move and AI flip
     AI_MOVE = pygame.USEREVENT + 1
     AI_FLIP = pygame.USEREVENT + 2
-    pygame.time.set_timer(AI_MOVE,game.players[1].delay)
-    pygame.time.set_timer(AI_FLIP,game.players[1].delay//2 + random.randint(10,25)*17)
+    pygame.time.set_timer(AI_MOVE, game.players[1].delay)
+    pygame.time.set_timer(
+        AI_FLIP,
+        game.players[1].delay // 2 + random.randint(10, 25) * 17
+    )
+
+    # Create game sprites and start the game
     game.create_sprites()
     game.start_game()
+
+    # Load images for cards and jokers
     for card in game.deck.contents:
         images[card.name] = Image(card)
-    images["red_joker"] = Image(Joker((99,"J")))
+    images["red_joker"] = Image(Joker((99, "J")))
+
+    # Main game loop
     while run:
         pile_hover = get_pile_under_mouse(game)
         clock.tick(60)
+
+        # Check for a winner
         if game.winner:
-            scr.win_card(game.winner,player)
+            scr.win_card(game.winner, player)
             menu()
             run = False
 
+        # Adjust AI timers if delay changes
         if game.players[1].delay != delay:
-            pygame.time.set_timer(AI_MOVE,game.players[1].delay)
-            pygame.time.set_timer(AI_FLIP,game.players[1].delay//2 + random.randint(10,25)*17)
+            pygame.time.set_timer(AI_MOVE, game.players[1].delay)
+            pygame.time.set_timer(
+                AI_FLIP,
+                game.players[1].delay // 2 + random.randint(10, 25) * 17
+            )
             delay = game.players[1].delay
 
+        # Event handling
         for event in pygame.event.get():
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
+                    # Handle pause menu
                     game.paused = True
                     scr.paused()
-                    run = paused_screen(game,images)
+                    run = paused_screen(game, images)
                     game.paused = False
                 else:
-                    if player.timed_out == False:
-                        _return = game.keyboard_update(player,event.unicode)
-                        if _return != False:
-                            start_new_thread(time_out,(player,game,images[_return._peek().name],_return._peek().pos))
+                    if not player.timed_out:
+                        _return = game.keyboard_update(player, event.unicode)
+                        if _return:
+                            start_new_thread(
+                                time_out,
+                                (player, game, images[_return._peek().name], 
+                                _return._peek().pos)
+                            )
+
             if event.type == AI_FLIP:
                 game.players[1].flip()
+
             if event.type == AI_MOVE:
                 game.players[1].make_move(game)
+
             if event.type == QUIT:
                 run = False
+
             if event.type == MOUSEBUTTONDOWN:
-                if pile_hover != None:
+                if pile_hover:
                     selected_card = pile_hover._peek()
                     old_pile = pile_hover
+
             if event.type == MOUSEBUTTONUP:
-                if pile_hover != None and old_pile != None:
-                    game.mouse_update(old_pile,pile_hover)
+                if pile_hover and old_pile:
+                    game.mouse_update(old_pile, pile_hover)
                 else:
-                    if selected_card != None:
-                        game.move_card(old_pile,old_pile)
+                    if selected_card:
+                        game.move_card(old_pile, old_pile)
                 selected_card = None
                 old_pile = None
 
-        win.blit(bg,(0,0))
-        scr.game_texts(game,win)
-        scr.display_cards(game,images,win,selected_card)
+        # Update game screen
+        win.blit(bg, (0, 0))
+        scr.game_texts(game, win)
+        scr.display_cards(game, images, win, selected_card)
         pygame.display.flip()
+
+    # Return to main menu at the end
     scr.main_menu()
 
 def main_2_player():
@@ -297,9 +336,6 @@ def main_online(HostIP):
             win.blit(bg,(0,0))
             scr.game_texts(game,win)
             scr.display_cards(game,images,win,selected_card)
-
-        
-        
         pygame.display.flip()
     scr.main_menu()
     return True
@@ -328,11 +364,6 @@ def paused_screen(game:Game,images):
         win.blit(bg,(0,0))
         for entity in game.all_sprites:
             win.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
-            
-        haze =pygame.Surface((SCREEN_WIDTH,SCREEN_HEIGHT))
-        haze.fill((128,128,128))
-        haze.set_alpha(200)
-        win.blit(haze,(0,0))
         scr.display(win)
         pygame.display.flip()
 
@@ -380,7 +411,7 @@ def join_menu():
         scr.display(win)
         pygame.display.flip()
 
-def change_keybind(button:Setting_Button):
+def change_setting(button:Setting_Button):
     File = "rules.txt"
     if button.input == "max_cards_for_joker":
         options = ["3","5","10","15"]
@@ -464,7 +495,3 @@ def menu():
         pygame.display.flip()
 scr.main_menu()
 menu() 
-
-#make waiting for opponent, opponend paused, paused menus
-#Do not make games menus, are either in a menu, or in a game
-

@@ -9,7 +9,7 @@ from pygame.locals import (
     QUIT,
 )
 
-class ScreenCard():
+class Display():
     def __init__(self) -> None:
         self.texts = pygame.sprite.Group()
         self.buttons = pygame.sprite.Group()
@@ -24,6 +24,14 @@ class ScreenCard():
         self.texts.empty()
         self.buttons.empty()
 
+    def display(self,win):
+        if self.haze_bool == True:
+            win.blit(self.haze,(0,0))
+        for item in self.texts:
+            item.draw(win)
+        for item in self.buttons:
+            item.draw(win)
+    
     def main_menu(self):
         self.empty()
         self.buttons.add(Button("Singleplayer",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2- 120),80),
@@ -44,7 +52,7 @@ class ScreenCard():
                         Button("Gilly",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2 + 120),60))
         self.screen = "singleplayer_menu"
 
-    def settings(self,win):
+    def settings(self):
         self.empty()
         counter = 0
         text = Text("Settings",80)
@@ -139,6 +147,7 @@ class ScreenCard():
         self.screen = "Online_quit"
         
     def paused(self):
+        self.haze_bool = True
         self.buttons.add(Button("Resume",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2- 120),80),
                        Button("Quit",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2),80))
         self.screen = "paused"
@@ -181,14 +190,6 @@ class ScreenCard():
         text.draw(win)
         self.screen = "press_to_start"
 
-    def display(self,win):
-        if self.haze_bool == True:
-            win.blit(self.haze,(0,0))
-        for item in self.texts:
-            item.draw(win)
-        for item in self.buttons:
-            item.draw(win)
-    
     def game_texts(self,game:Game,win):
         if game.flip_ready[0] == True:
             text = Text("ready",50)
