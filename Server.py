@@ -62,10 +62,11 @@ def threaded_client(conn, p, gameId):
                                 if p == 1:
                                     games[gameId].ready = True
                                     games[gameId].start_game()
-                            elif player.timed_out == False:
-                                _return = game.keyboard_update(player,data)
-                                if _return != False:
-                                    start_new_thread(time_out,(player,_return._peek(),_return._peek().pos))
+                            elif not player.timed_out:
+                                #Pile only returned if move is invalid
+                                pile = game.keyboard_update(player,data)
+                                if pile:
+                                    start_new_thread(time_out,(player,pile._peek(),pile._peek().pos))
                     try:
                         conn.sendall(pickle.dumps(game))
                     except Exception as E:

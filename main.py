@@ -1,54 +1,88 @@
-#external imports
+# External imports
 import pygame
 import random
 import subprocess
 from time import sleep
 from _thread import *
 
-#Internal imports
+# Internal imports
 from network import Network
 from _game import * 
 from gameobjects import *
 from display import *
 
-#Pygame initialisation
+# Pygame initialization
 pygame.init() 
 pygame.font.init()
 pygame.display.init()
+
 from pygame.locals import *
+
+# Set up game window
 win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 bg = pygame.image.load("./images/backround.jpg")
-bg = pygame.transform.scale(bg, (SCREEN_WIDTH,SCREEN_HEIGHT))
+bg = pygame.transform.scale(bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Speed/Split: You decide")
 
+# Display and image dictionary
 scr = Display() 
 images = {}
 
-def run_server_script():
-    subprocess.Popen(["python","Server.py"])
 
-def get_pile_under_mouse(game:Game):
-    x,y = pygame.Vector2(pygame.mouse.get_pos())
+def run_server_script():
+    """Run the server script for online multiplayer."""
+    subprocess.Popen(["python", "Server.py"])
+
+
+def get_pile_under_mouse(game: Game):
+    """
+    Get the pile under the mouse pointer.
+    
+    This function checks if the mouse position is within the bounds
+    of any pile in the game and returns that pile.
+    """
+    x, y = pygame.Vector2(pygame.mouse.get_pos())
+    
     for pile in game.all_piles:
-        if x > pile.pos[0] and x < (pile.pos[0] + CARD_WIDTH) and y > pile.pos[1] and y < (pile.pos[1]+CARD_HEIGHT):
+        if (
+            x > pile.pos[0]
+            and x < (pile.pos[0] + CARD_WIDTH)
+            and y > pile.pos[1]
+            and y < (pile.pos[1] + CARD_HEIGHT)
+        ):
             return pile
     return None  
 
-def time_out(player : Player,game:Game, card:Image, start_pos):
+
+def time_out(player: Player, game: Game, card: Image, start_pos):
+    """
+    Handle player time-out animations.
+    
+    The player's card is animated to move slightly and return
+    to the start position to visually indicate the time-out.
+    """
     player.timed_out = True
     for i in range(5):
         sleep(0.05)
-        card.move_towards(game, (start_pos[0]+10,start_pos[1]))
+        card.move_towards(game, (start_pos[0] + 10, start_pos[1]))
         sleep(0.05)
-        card.move_towards(game, (start_pos[0]-10,start_pos[1]))
-        card.move_towards(game, (start_pos[0]-10,start_pos[1]))
+        card.move_towards(game, (start_pos[0] - 10, start_pos[1]))
+        card.move_towards(game, (start_pos[0] - 10, start_pos[1]))
         sleep(0.05)
-        card.move_towards(game,start_pos)
+        card.move_towards(game, start_pos)
     player.timed_out = False
 
+
 def button_action(button):
+    """
+    Handle button click actions in the game menus.
+    
+    Depending on the button clicked, different game modes or menus
+    are launched.
+    """
     text = button.name
-    if button.__class__ == Setting_Button:
+    
+    if isinstance(button, Setting_Button):
         change_setting(button)
     elif text == "Singleplayer":
         scr.singleplayer_menu()
@@ -100,6 +134,7 @@ def main_1_player(delay):
     old_pile = None
 
     # Custom events for AI move and AI flip
+    # AI flip occurs at a random set interval, allows AI to have "2 hands"
     AI_MOVE = pygame.USEREVENT + 1
     AI_FLIP = pygame.USEREVENT + 2
     pygame.time.set_timer(AI_MOVE, game.players[1].delay)
@@ -148,12 +183,13 @@ def main_1_player(delay):
                     game.paused = False
                 else:
                     if not player.timed_out:
-                        _return = game.keyboard_update(player, event.unicode)
-                        if _return:
+                        #Pile only returned if an invalid move was made
+                        pile = game.keyboard_update(player, event.unicode)
+                        if pile:
                             start_new_thread(
                                 time_out,
-                                (player, game, images[_return._peek().name], 
-                                _return._peek().pos)
+                                (player, game, images[pile._peek().name], 
+                                pile._peek().pos)
                             )
 
             if event.type == AI_FLIP:
@@ -220,10 +256,15 @@ def main_2_player():
                 else:
                     if event.unicode not in player.inputs:
                         player = game.players[abs(player.id -1)]
-                    if player.timed_out == False:
-                        _return = game.keyboard_update(player,event.unicode)
-                        if _return != False:
-                            start_new_thread(time_out,(player,game,images[_return._peek().name],_return._peek().pos))
+                    if not player.timed_out:
+                        #Pile only returned if an invalid move was made
+                        pile = game.keyboard_update(player, event.unicode)
+                        if pile:
+                            start_new_thread(
+                                time_out,
+                                (player, game, images[pile._peek().name], 
+                                pile._peek().pos)
+                            )
 
             elif event.type == QUIT:
                 run = False
