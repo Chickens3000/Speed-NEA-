@@ -10,7 +10,7 @@ class Player:
         if self.id == 0:
             self.hand = [Pile(str(id)+"-"+str(i),8,
                               ((SCREEN_WIDTH//2 -450-CARD_WIDTH//2 + 225 * i),
-                               (SCREEN_HEIGHT - CARD_HEIGHT - 30))) for i in range(5)] #extra 42 allows far stacked cards and 10 pixel leeway
+                               (SCREEN_HEIGHT - CARD_HEIGHT - 30))) for i in range(5)] 
             self.side_pile = Pile("side"+(str(id)),36,
                                   (SCREEN_WIDTH//2-(450+CARD_WIDTH//2),
                                   (SCREEN_HEIGHT - 2* CARD_HEIGHT - 2* 30)))

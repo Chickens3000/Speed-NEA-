@@ -47,63 +47,71 @@ class Joker(Card):
         return "red_joker"    
     
 class Pile:
-
-    def __init__(self,name,max,pos) -> None:
+    def __init__(self, name, max, pos) -> None:
+        # Initialize a Pile instance with a given name, maximum size, and position.
         self.stack_pointer = -1
         self.max = max
-        self.contents = ["" for Elements in range(self.max)]
+        self.contents = ["" for _ in range(self.max)]
         self.name = name
         self.pos = pos
 
-
-    def push(self, card: tuple,all_sprites):
-        if self.stack_pointer < self.max -1:
+    def push(self, card: tuple, all_sprites):
+        # Push a card onto the pile if there is space.
+        if self.stack_pointer < self.max - 1:
             self.stack_pointer += 1
             self.contents[self.stack_pointer] = card
-            all_sprites.change_layer(sprite = card,new_layer=self.stack_pointer)
+            all_sprites.change_layer(sprite=card, new_layer=self.stack_pointer)
         else:
-            print("Stack Overflow:",self.name)
+            # Print a warning if the pile is full.
+            print("Stack Overflow:", self.name)
             return False
-    
+
     def _pop(self):
+        # Remove and return the top card from the pile if it is not empty.
         if self.stack_pointer >= 0:
+            card = self.contents[self.stack_pointer]
+            self.contents[self.stack_pointer] = ""
             self.stack_pointer -= 1
-            card = self.contents[self.stack_pointer + 1]
-            self.contents[self.stack_pointer + 1] = ""
+            return card
+        else:
+            # Return False if the pile is empty.
+            return False
+
+    def _peek(self):
+        # Return the top card without removing it if the pile is not empty.
+        if self.stack_pointer >= 0:
+            card = self.contents[self.stack_pointer]
             return card
         else:
             return False
-    
-    def _peek(self):
-      if self.stack_pointer >= 0:
-        card:Card = self.contents[self.stack_pointer]
-        return card
-      else:
-          return False
 
     def push_all(self, cards: list):
-        if cards == False:
+        # Push a list of cards onto the pile if there is enough space.
+        if not cards:
             return False
         if self.stack_pointer < self.max - len(cards):
             self.stack_pointer += 1
-            self.contents[self.stack_pointer:(self.stack_pointer +len(cards))] = cards
-            self.stack_pointer =self.stack_pointer +(len(cards)-1)
+            self.contents[self.stack_pointer:self.stack_pointer + len(cards)] = cards
+            self.stack_pointer += len(cards) - 1
         else:
-            print("Stack Overflow:",self.name)
+            # Print a warning if the pile cannot fit all the cards.
+            print("Stack Overflow:", self.name)
             return False
-        
+
     def pop_all(self):
+        # Remove and return all cards from the pile if it is not empty.
         if self.stack_pointer >= 0:
-            cards = self.contents[0:(self.stack_pointer+1)]
-            self.contents[0:(self.stack_pointer+1)] = ["" for Elements in range(self.stack_pointer+1)]
+            cards = self.contents[:self.stack_pointer + 1]
+            self.contents[:self.stack_pointer + 1] = ["" for _ in range(self.stack_pointer + 1)]
             self.stack_pointer = -1
             return cards
         else:
+            # Return False if the pile is empty.
             return False
-    
+
     def is_empty(self):
-        if self.stack_pointer == -1:
-            return True
+        # Check if the pile is empty.
+        return self.stack_pointer == -1
 
 class Deck(Pile):
     def create_deck(self,all_sprites :pygame.sprite.Group):
