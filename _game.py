@@ -12,13 +12,15 @@ class Game():
         self.moving_sprites = pygame.sprite.Group() 
         self.all_sprites = pygame.sprite.LayeredUpdates()
         self.flip_ready = [False,False]
-        self.all_piles = self.center_piles + self.players[0].hand + [self.players[0].side_pile] + self.players[1].hand + [self.players[1].side_pile]
         self.winner = None
         self.paused = False
         self.rules = self.set_rules()
 
     def create_sprites(self):
         self.all_sprites = self.deck.create_deck(self.all_sprites)
+
+    def all_piles(self):
+        return self.center_piles + self.players[0].hand + [self.players[0].side_pile] + self.players[1].hand + [self.players[1].side_pile]
 
     def start_game(self):
         random.shuffle(self.deck.contents)
@@ -124,7 +126,7 @@ class Game():
         if self.players[1].side_pile.is_empty() != True:
             self.move_card(self.players[1].side_pile,self.center_piles[1])        
         for pile in self.center_piles:
-            if pile.is_empty != True:
+            if pile.is_empty() != True:
                 pile._peek().faced_up = True
         
         self.flip_ready = [False,False]
@@ -134,7 +136,7 @@ class Game():
             player.cards.push_all(player.side_pile.pop_all())
             for stack in player.hand:
                 player.cards.push_all(stack.pop_all())
-            for i in range(player.cards.stack_pointer):
+            for i in range(player.cards.stack_pointer + 1):
                 player.cards.contents[i].faced_up = False
             
             #Change the difficulty of adaptive opponent if appropriate
@@ -142,18 +144,24 @@ class Game():
                 player.edit_delay()
         self.next_round()
 
-    def mouse_update(self,old_pile:Pile,new_pile:Pile):#should probably add a player check
+    def mouse_update(self,player:Player,old_pile:Pile,new_pile:Pile):#should probably add a player check
         if old_pile._peek() == False: # If pile is empty or if new piles card is faced down, end procedure
             return False
         
-        if old_pile.name[0:4] == "side": # If user clicks side pile, check for moves and flip card
-            self.check_for_moves(self.players[int(old_pile.name[4])])
+        if old_pile.name == "side" + str(player.id): # If user clicks side pile, check for moves and flip card
+            self.check_for_moves(player)
             self.move_card(old_pile,old_pile)
             return False
         
         if old_pile.name[0:6] == "center": 
             self.slam(self.players[0],old_pile)
+            self.move_card(old_pile,old_pile)
+            return False
 
+        if old_pile.name[0] != str(player.id):
+            self.move_card(old_pile,old_pile)
+            return False
+        
         if old_pile._peek().faced_up == False: #If card is not revealed, reveal card
             old_pile._peek().faced_up = True
             self.move_card(old_pile,old_pile)
@@ -211,9 +219,11 @@ class Game():
     def play_card(self,pile,player):
         if pile._peek() == False: # If pile is empty, end procedure
             return False
+        
         if pile._peek().faced_up == False: #If card is not revealed, reveal card
             pile._peek().faced_up = True
             return False
+        
         for centre_pile in self.center_piles: # if card can be played, play card
             if self.move_is_valid(pile._peek(),centre_pile._peek()) == True:
                 self.move_card(pile,centre_pile)
@@ -330,55 +340,3 @@ class Game():
                 rule, value = line.strip().split(':',1)
                 rules[rule.strip()] = value.strip()
         return rules
-
-
-        
-
-
-
-class Queue:
-    # Constructor
-    def __init__(self):
-        self.FrontPointer = 0
-        self.BackPointer = -1
-        self.Max = 4
-        self.Contents = ["" for Elements in range(self.Max)]
-    # Add an item to the queue
-    def Enqueue(self, Item):
-        print(self.Contents.count(""))
-        print(self.items_in_queue())
-        if self.items_in_queue() != self.Max:
-            self.BackPointer = self.increment_pointer(self.BackPointer)
-            self.Contents[self.BackPointer] = Item
-            return True
-        else:
-            return False
-    # Remove an item from the queue
-    def Dequeue(self):
-        if self.items_in_queue() == 0:
-            return False
-        else:
-            Item = self.Contents[self.FrontPointer]
-            self.Contents[self.FrontPointer] = ""
-            self.FrontPointer= self.increment_pointer(self.FrontPointer)
-            return Item
-            
-    # Look at the next item in the queue without removing it      
-    def Peek(self):
-        if self.items_in_queue() == 0:
-            return None
-        else:
-            return self.Contents[self.FrontPointer]
-    
-    def outputQ(self):
-        print(self.Contents)
-
-    def increment_pointer(self,pointer):
-        if pointer < self.Max-1:
-            pointer += 1
-        else:
-            pointer = 0
-        return pointer
-    
-    def items_in_queue(self):
-        return (self.Max)-(self.Contents.count(""))

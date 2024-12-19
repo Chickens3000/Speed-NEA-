@@ -92,6 +92,8 @@ class Display():
                 "haze": True
             }
         }
+        self.game_texts = {}
+
 
     def set_haze(self):
         haze = pygame.Surface((SCREEN_WIDTH,SCREEN_HEIGHT))
@@ -171,14 +173,32 @@ class Display():
                 self.buttons.add(Setting_Button(line,(SCREEN_WIDTH//2  * (counter % 2 + 1) - 90, SCREEN_HEIGHT//2 + 75 * (counter //2)+30) ,40))
 
                 counter += 1
-
+    def setup_game_screen(self,game:Game,display_player:Player):
+        self.game_texts = {
+            "p1ready" : Text("ready",50).set_pos((game.players[0].side_pile.pos[0] + CARD_WIDTH + 20),game.players[0].side_pile.pos[1]),
+            "p2ready" : Text("ready",50).set_pos((game.players[1].side_pile.pos[0] - 133),game.players[1].side_pile.pos[1]),
+            "2player_slam": [Input_Button((game.players[0].inputs[5] + "/" +game.players[1].inputs[5]),
+                                          (game.center_piles[0].pos[0] + CARD_WIDTH//2,game.center_piles[0].pos[1] +CARD_HEIGHT),
+                                          50),
+                             Input_Button(game.players[0].inputs[6] + "/" +game.players[1].inputs[6],
+                                          (game.center_piles[1].pos[0] + CARD_WIDTH//2,game.center_piles[1].pos[1] +CARD_HEIGHT),
+                                          50)],
+            "slam": [Input_Button(display_player.inputs[5],
+                                 (game.center_piles[0].pos[0] + CARD_WIDTH//2,game.center_piles[0].pos[1] +CARD_HEIGHT),
+                                  50),
+                     Input_Button(display_player.inputs[6],
+                                 (game.center_piles[1].pos[0] + CARD_WIDTH//2,game.center_piles[1].pos[1] +CARD_HEIGHT),
+                                  50)],
+            "player1_controls" : [Input_Button(game.players[0].inputs[i],(game.players[0].hand[i].pos[0] + CARD_WIDTH//2,game.players[0].hand[i].pos[1] +CARD_HEIGHT),30) for i in range(len(game.players[0].hand))],
+            "player2_controls" : [Input_Button(game.players[1].inputs[i],(game.players[1].hand[i].pos[0] + CARD_WIDTH//2,game.players[1].hand[i].pos[1] +CARD_HEIGHT),30) for i in range(len(game.players[1].hand))]
+        }
     def display_cards(self,game,images,selected_card):
         for entity in game.all_sprites:
             if entity.faced_up != images[entity.name].seen:
                 images[entity.name].change_image()
             if selected_card:
                 images[selected_card.name].move_towards(game,(pygame.Vector2(pygame.mouse.get_pos())[0]-(CARD_WIDTH/2),pygame.Vector2(pygame.mouse.get_pos())[1]-(CARD_HEIGHT/2)))
-            elif entity in game.moving_sprites:
+            if entity in game.moving_sprites:
                 images[entity.name].move_towards(game,entity.pos)
                 
             self.win.blit(images[entity.name]._image()[0],images[entity.name]._image()[1])
@@ -193,10 +213,10 @@ class Display():
         for text in self.texts:
             text.draw(self.win)
     
-    def game_display(self,game,images,selected_card):
+    def game_display(self,game,images,selected_card,display_player):
         self.win.blit(self.bg,(0,0))
         self.display_cards(game,images,selected_card)
-        self.game_texts(game)
+        self.display_game_texts(game,display_player)
         if self.diplay_haze:
             self.win.blit(self.haze,(0,0))
 
@@ -205,22 +225,31 @@ class Display():
         for text in self.texts:
             text.draw(self.win)
     
-    def game_texts(self,game:Game):#
+    def display_game_texts(self,game:Game,display_player:Player):#
         if game.flip_ready[0] == True:
-            text = Text("ready",50)
-            text.set_pos((game.players[0].side_pile.pos[0] + CARD_WIDTH + 20),game.players[0].side_pile.pos[1])
-            text.draw(self.win)
+
+            self.game_texts["p1ready"].draw(self.win)
         if game.flip_ready[1] == True:
-            text = Text("ready",50)
-            text.set_pos((game.players[1].side_pile.pos[0] - text.width - 20),game.players[1].side_pile.pos[1])
-            text.draw(self.win)
+            self.game_texts["p2ready"].draw(self.win)
         if game.empty_hand(game.players[0]) == True or game.empty_hand(game.players[1]) == True:
-            text1 = Text(game.players[0].inputs[5] + "/" +game.players[1].inputs[5],80)
-            text2 = Text(game.players[0].inputs[6] + "/" +game.players[1].inputs[6           ],80)
-            text1.set_pos(SCREEN_WIDTH//2-CARD_WIDTH - text1.width - 20,SCREEN_HEIGHT//2 - text1.height//2)
-            text2.set_pos(SCREEN_WIDTH//2+CARD_WIDTH + 20 ,SCREEN_HEIGHT//2 - text2.height//2)
-            text1.draw(self.win)
-            text2.draw(self.win)
+            if display_player == "2player":
+                for button in self.game_texts["2player_slam"]:
+                    button.draw(self.win)
+            else:
+                for button in self.game_texts["slam"]:
+                    button.draw(self.win)
+        if display_player == "2player":
+            for button in self.game_texts["player1_controls"]:
+                    button.draw(self.win)
+            for button in self.game_texts["player2_controls"]:
+                    button.draw(self.win)
+        elif display_player.id == 0:
+            for button in self.game_texts["player1_controls"]:
+                    button.draw(self.win)
+        elif display_player.id == 1:
+            for button in self.game_texts["player2_controls"]:
+                    button.draw(self.win)
+
     
     def set_winner_screen(self,player,winner,screen_name):
         if screen_name == "2_player_win_card":
@@ -246,7 +275,7 @@ class Button(pygame.sprite.Sprite):
 
     def draw(self, win):
         pygame.draw.rect(win,(255,255,255),(self.x -35, self.y -10,self.width, self.height),5,10)
-        win.blit(self.text, (self.x , self.y ))
+        win.blit(self.text, (self.x , self.y )) 
 
     def click(self, pos):
         x1 = pos[0]
@@ -271,6 +300,19 @@ class Setting_Button(Button):
         else:
             return False
         
+class Input_Button(Button):
+    def __init__(self, name, pos, font_size):
+        super().__init__(name, pos, font_size)
+
+    def draw(self, win):
+        s = pygame.Surface((self.width-9,self.height-9))
+        s.set_alpha(200)
+        s.fill((128,128,128))               
+        win.blit(s, (self.x -30, self.y -5))
+        pygame.draw.rect(win,(255,255,255),(self.x -35, self.y -10,self.width, self.height),5,10)
+        win.blit(self.text, (self.x , self.y )) 
+
+
 
 class Text(pygame.sprite.Sprite):
 
@@ -283,9 +325,11 @@ class Text(pygame.sprite.Sprite):
 
     def draw(self, win):
         win.blit(self.text, (self.x , self.y))
+        
 
     def centre_abt(self,pos):
         self.x,self.y = pos[0] - self.text.get_width()//2,pos[1] -self.text.get_height()//2
         return self
     def set_pos(self,x,y):
         self.x,self.y = x,y
+        return self

@@ -38,7 +38,7 @@ def get_pile_under_mouse(game: Game):
     """
     x, y = pygame.Vector2(pygame.mouse.get_pos())
     
-    for pile in game.all_piles:
+    for pile in game.all_piles():
         if (
             x > pile.pos[0]
             and x < (pile.pos[0] + CARD_WIDTH)
@@ -110,6 +110,7 @@ def main_1_player(delay):
     clock = pygame.time.Clock()
     game = Game(0)
     player = game.players[0]
+    scr.setup_game_screen(game,player)
 
     # Determine opponent type based on delay
     if delay == -1:
@@ -131,7 +132,7 @@ def main_1_player(delay):
         game.players[1].delay // 2 + random.randint(10, 25) * 17
     )
 
-    # Create game sprites and start the game
+    # Create game sutes and start the game
     game.create_sprites()
     game.start_game()
 
@@ -166,7 +167,7 @@ def main_1_player(delay):
                 if event.key == K_ESCAPE:
                     # Handle pause menu
                     game.paused = True
-                    run = paused_screen(game,images)
+                    run = paused_screen(game,images,player)
                     game.paused = False
                 else:
                     if not player.timed_out:
@@ -196,7 +197,7 @@ def main_1_player(delay):
 
             if event.type == MOUSEBUTTONUP:
                 if pile_hover and old_pile:
-                    game.mouse_update(old_pile, pile_hover)
+                    game.mouse_update(player,old_pile, pile_hover)
                 else:
                     if selected_card:
                         game.move_card(old_pile, old_pile)
@@ -204,8 +205,7 @@ def main_1_player(delay):
                 old_pile = None
 
         # Update game screen
-        scr.game_texts(game)
-        scr.game_display(game,images,selected_card)
+        scr.game_display(game,images,selected_card,player)
         pygame.display.flip()
 
     # Return to main menu at the end
@@ -216,6 +216,7 @@ def main_2_player():
     clock = pygame.time.Clock()
     game = Game(0)
     player = game.players[0]
+    scr.setup_game_screen(game,player)
     selected_card = None
     old_pile = None
     
@@ -237,7 +238,7 @@ def main_2_player():
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     game.paused = True
-                    run = paused_screen(game,images)
+                    run = paused_screen(game,images,"2player")
                     game.paused = False
                 else:
                     if event.unicode not in player.inputs:
@@ -261,14 +262,16 @@ def main_2_player():
                     old_pile = pile_hover
             if event.type == MOUSEBUTTONUP:
                 if pile_hover != None and old_pile != None:
-                    game.mouse_update(old_pile,pile_hover)
+                    if old_pile.name[0] == "1" or old_pile.name == "side1":
+                        game.mouse_update(game.players[1],old_pile,pile_hover)
+                    else:
+                         game.mouse_update(player,old_pile,pile_hover)
                 else:
                     if selected_card != None:
                         game.move_card(old_pile,old_pile)
                 selected_card = None
                 old_pile = None
-        scr.game_texts(game)
-        scr.game_display(game,images,selected_card)
+        scr.game_display(game,images,selected_card,"2player")
 
         pygame.display.flip()
     scr.set_screen("main_menu")
@@ -289,6 +292,7 @@ def main_online(HostIP):
         for card in game.deck.contents:
             images[card.name] = Image(card)
             images["red_joker"] = Image(Joker((99,"J")))
+        scr.setup_game_screen(game,player)
     except:
         return False
 
@@ -328,7 +332,7 @@ def main_online(HostIP):
                     exit()
                 if event.type == KEYDOWN: 
                     pass
-            scr.game_display(game,images,None)
+            scr.game_display(game,images,None,player)
         else:
             if not scr.is_current_screen(""):
                 scr.empty()
@@ -344,7 +348,7 @@ def main_online(HostIP):
                 if event.type == KEYDOWN: # Timeoutes online to be done server side
                     if event.key == K_ESCAPE:
                         n.send("pause")
-                        run = paused_screen(game,images)
+                        run = paused_screen(game,images,player)
                         n.send("pause")
                     else:
                         n.send(event.unicode)
@@ -355,8 +359,8 @@ def main_online(HostIP):
                         selected_card = pile_hover._peek()
                         old_pile = pile_hover
                 if event.type == MOUSEBUTTONUP:
-                    if pile_hover and old_pile :
-                        n.send("update:"+old_pile.name+";"+pile_hover.name)
+                    if pile_hover   and old_pile :
+                        n.send("mouse_update:"+old_pile.name+";"+pile_hover.name)
                     else:
                         if selected_card:
                             n.send("return:"+old_pile.name)
@@ -365,13 +369,12 @@ def main_online(HostIP):
                     
         
                     
-            scr.game_texts(game)
-            scr.game_display(game,images,selected_card)
+            scr.game_display(game,images,selected_card,player)
         pygame.display.flip()
     scr.set_screen("main_menu")
     return True
 
-def paused_screen(game:Game,images):
+def paused_screen(game:Game,images,display_player):
     run = True
     clock = pygame.time.Clock()
     scr.set_screen("paused")
@@ -396,7 +399,7 @@ def paused_screen(game:Game,images):
                             scr.empty()
                             return False
         
-        scr.game_display(game,images,None)
+        scr.game_display(game,images,None,display_player)
         pygame.display.flip()
 
 def join_menu():

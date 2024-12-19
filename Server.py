@@ -44,17 +44,17 @@ def threaded_client(conn, p, gameId):
                     if data != "get":
                         if data == "pause":
                             game.paused = not game.paused
-                        elif data[0:6] == "update":
+                        elif data[0:12] == "mouse_update":
                             colon = data.index(":")
                             semi_colon = data.index(";")
-                            for pile in game.all_piles:
+                            for pile in game.all_piles():
                                 if data[colon+1:semi_colon] == pile.name:
                                     old_pile = pile
                                 if data[semi_colon+1:] == pile.name:
                                     new_pile = pile
-                            game.mouse_update(old_pile,new_pile)
+                            game.mouse_update(player,old_pile,new_pile)
                         elif data[0:6] == "return":
-                            for pile in game.all_piles:
+                            for pile in game.all_piles():
                                 if data[7:] == pile.name:
                                     game.move_card(pile,pile)
                         else:
