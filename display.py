@@ -25,7 +25,8 @@ class Display():
             "main_menu" : {
                 "buttons" : [Button("Singleplayer",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2- 120),80),
                        Button("2 Player",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2),80),
-                       Button("Settings",(160,SCREEN_HEIGHT- 80),60)],
+                       Button("Settings",(160,SCREEN_HEIGHT- 80),60),
+                       Button("How to Play",(SCREEN_WIDTH -220,SCREEN_HEIGHT- 80),60)],
             },
             "two_player_menu" : {
                 "buttons" : [Button("Local",(SCREEN_WIDTH//2,SCREEN_HEIGHT//2- 120),80),
@@ -88,6 +89,16 @@ class Display():
             "2_player_win_card" : {
                 "texts" : [Text("Player 1 Wins",80).centre_abt((SCREEN_WIDTH//2,SCREEN_HEIGHT//2)),
                            Text("Player 2 Wins",80).centre_abt((SCREEN_WIDTH//2,SCREEN_HEIGHT//2)),
+                           Text("Press Esc to return to Menu",30).centre_abt((SCREEN_WIDTH//2 ,SCREEN_HEIGHT-40))],
+                "haze": True
+            },
+            "H2P page 1" : {
+                "texts" : [BlockofText("how2play_pg1.txt",25)],
+                "buttons": [Button("Next Page",(SCREEN_WIDTH//2,SCREEN_HEIGHT- 65),50)],
+                "haze": True
+            },
+            "H2P page 2" : {
+                "texts" : [BlockofText("how2play_pg2.txt",25),
                            Text("Press Esc to return to Menu",30).centre_abt((SCREEN_WIDTH//2 ,SCREEN_HEIGHT-40))],
                 "haze": True
             }
@@ -333,3 +344,53 @@ class Text(pygame.sprite.Sprite):
     def set_pos(self,x,y):
         self.x,self.y = x,y
         return self
+
+class BlockofText(pygame.sprite.Sprite):
+    def __init__(self,file, font_size):
+        super(BlockofText,self).__init__()
+        self.font_size = font_size
+        self.font = pygame.font.SysFont(FONT,self.font_size)
+        script = self.create_script(file)
+        self.text = self.create_text(script)
+
+    def create_script(self,textfile):
+        with open(textfile,'r') as file:
+            script = ""
+            for line in file:
+                script += line
+        return script
+
+    def create_text(self,script):
+        text = []
+        final_line = False
+        while not final_line:
+            if "\n" in script:
+                linebreak = script.index("\n")
+            else:
+                final_line = True
+                linebreak = len(script)
+            line = script[:linebreak]
+            if self.font.size(line)[0]  > SCREEN_WIDTH - 20:
+                current_line = ""
+                words = line.split()
+                for word in words:
+                    test_line = current_line + " " +  word
+                    if self.font.size(test_line)[0]  > SCREEN_WIDTH - 20:
+                        text.append(Text(current_line,self.font_size))
+                        current_line = word
+                    else:
+                        current_line = test_line
+                if current_line:
+                    text.append(Text(current_line,self.font_size))
+            else:
+                text.append(Text(line,self.font_size))
+            script = script[linebreak+ 1:]
+        return text
+    
+    def draw(self,win):
+        x,y = 10,20
+        for line in self.text:
+            line.set_pos(x,y)
+            line.draw(win)
+            y += self.font_size + 10
+

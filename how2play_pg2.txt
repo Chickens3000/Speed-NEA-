@@ -1,0 +1,7 @@
+The goal is to play as fast as possible to open and discard your cards. If a player cannot make a move, they get ready to flip by CLICKING THEIR SIDE PILE. Once both players are ready, and no more moves can be made, a card from each players side pile is added to the discard pile. This should be repeated until either player can discard a card.
+
+-------End of Round-------
+When either player empties their hand, both players should aim to slam (By PRESSING CENTRE PILE KEYS/by CLICKING CENTRE PILE) on the smallest pile. Whoever acheives this first takes the smaller pile and adds it to their cards.
+
+-------Joker round-------
+The game continues until a player has fewer than the set number for that game (defaulted to 10). At that point, the player must continue until they empty all their cards. If this player acheives this and slams the joker, the game is over.

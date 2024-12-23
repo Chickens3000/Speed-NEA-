@@ -1,0 +1,13 @@
+-------Objectives-------
+Speed (also known as Split or Slam) is a two-player shedding game. The goal is to be the first to get rid of all your cards by playing quickly in real-time, not turns.
+
+-------Gameplay-------
+At the beginning of each round cards are dealt and the top card from each side pile is upturned, forming two discard piles in the centre. Players can place cards on either pile if the card is one higher or lower than the top card of the pile (e.g., a 5 or 7 on a 6). Aces are both high and low.
+
+Players can:
+- Move a face-up card from their stacks onto a discard pile if it's valid.
+- Flip the next card in a stack after playing the top card.
+- Combine face-up cards of the same value across stacks to reveal more cards.
+- If a stack is empty, move a top card from another stack to fill it and flip the next card.
+
+These can be acheived by PRESSING THE KEY ASSOCIATED WITH THAT PILE, or by CLICKING AND DRAGGING CARDS

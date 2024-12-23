@@ -85,6 +85,10 @@ def button_action(button):
         scr.set_screen("two_player_menu")
     elif text == "Settings":
         scr.set_screen("settings")
+    elif text == "How to Play":
+        scr.set_screen("H2P page 1")
+    elif text == "Next Page":
+        scr.set_screen("H2P page 2")
     elif text == "Local":
         main_2_player()
     elif text == "Online":
@@ -182,7 +186,6 @@ def main_1_player(delay):
 
             if event.type == AI_FLIP:
                 game.players[1].flip()
-
             if event.type == AI_MOVE:
                 game.players[1].make_move(game)
 
@@ -190,12 +193,14 @@ def main_1_player(delay):
                 run = False
 
             if event.type == MOUSEBUTTONDOWN:
+                #Select card on click
                 if pile_hover:
                     selected_card = pile_hover._peek()
                     game.moving_sprites.add(selected_card)
                     old_pile = pile_hover
 
             if event.type == MOUSEBUTTONUP:
+                #Move card on release
                 if pile_hover and old_pile:
                     game.mouse_update(player,old_pile, pile_hover)
                 else:
