@@ -149,9 +149,9 @@ class Game():
             return False
         
         if old_pile.name == "side" + str(player.id): # If user clicks side pile, check for moves and flip card
-            self.check_for_moves(player)
+            move_available = self.check_for_moves(player)
             self.move_card(old_pile,old_pile)
-            return False
+            return move_available
         
         if old_pile.name[0:6] == "center": 
             self.slam(self.players[0],old_pile)
@@ -189,7 +189,6 @@ class Game():
         if old_pile._peek().code[0] == new_pile._peek().code[0] and new_pile.name[0] == old_pile.name[0]: # If the number is the same, stack
             self.move_card(old_pile,new_pile)
             return False
-        #self.check_for_moves(player)
         self.move_card(old_pile,old_pile)
 
 
@@ -335,7 +334,7 @@ class Game():
 
     def set_rules(self):
         rules = {}
-        with open("rules.txt",'r') as file:
+        with open("textfiles/rules.txt",'r') as file:
             for line in file:
                 rule, value = line.strip().split(':',1)
                 rules[rule.strip()] = value.strip()

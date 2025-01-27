@@ -93,12 +93,12 @@ class Display():
                 "haze": True
             },
             "H2P page 1" : {
-                "texts" : [BlockofText("how2play_pg1.txt",25)],
+                "texts" : [BlockofText("textfiles/how2play_pg1.txt",25)],
                 "buttons": [Button("Next Page",(SCREEN_WIDTH//2,SCREEN_HEIGHT- 65),50)],
                 "haze": True
             },
             "H2P page 2" : {
-                "texts" : [BlockofText("how2play_pg2.txt",25),
+                "texts" : [BlockofText("textfiles/how2play_pg2.txt",25),
                            Text("Press Esc to return to Menu",30).centre_abt((SCREEN_WIDTH//2 ,SCREEN_HEIGHT-40))],
                 "haze": True
             }
@@ -156,7 +156,7 @@ class Display():
     
     def setup_settings_screen(self):
         counter = 0
-        with open("controls.txt",'r') as file:
+        with open("textfiles/controls.txt",'r') as file:
             for line in file:
                 input, key = line.strip().split(':',1)
                 if input[0:2] == "p1":
@@ -171,7 +171,7 @@ class Display():
                 counter += 1
                 if counter ==7:
                     counter = 0
-        with open("rules.txt",'r') as file:
+        with open("textfiles/rules.txt",'r') as file:
             counter = 0
             for line in file:
                 input, key = line.strip().split(':',1)
@@ -270,7 +270,6 @@ class Display():
             screen = self.screens.get("win_card")
             if player.id == winner.id:
                 screen["texts"] =  [screen["texts"][0], screen["texts"][2]]
-                print(screen["texts"])
             else:
                 screen["texts"] =  [screen["texts"][1], screen["texts"][2]]
         self.set_screen(screen_name)

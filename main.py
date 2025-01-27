@@ -66,8 +66,7 @@ def time_out(player: Player, game: Game, card: Image, start_pos):
         sleep(0.05)
         card.move_towards(game, start_pos)
     player.timed_out = False
-
-
+  
 def button_action(button):
     """
     Handle button click actions in the game menus.
@@ -196,13 +195,18 @@ def main_1_player(delay):
                 #Select card on click
                 if pile_hover:
                     selected_card = pile_hover._peek()
-                    game.moving_sprites.add(selected_card)
                     old_pile = pile_hover
 
             if event.type == MOUSEBUTTONUP:
                 #Move card on release
                 if pile_hover and old_pile:
-                    game.mouse_update(player,old_pile, pile_hover)
+                    move_available = game.mouse_update(player,old_pile, pile_hover)
+                    if move_available:
+                        start_new_thread(
+                                time_out,
+                                (player,game, images[move_available._peek().name], 
+                                move_available._peek().pos)
+                            )
                 else:
                     if selected_card:
                         game.move_card(old_pile, old_pile)
@@ -263,14 +267,25 @@ def main_2_player():
             if event.type == MOUSEBUTTONDOWN:
                 if pile_hover != None:
                     selected_card = pile_hover._peek()
-                    game.moving_sprites.add(selected_card)
                     old_pile = pile_hover
             if event.type == MOUSEBUTTONUP:
                 if pile_hover != None and old_pile != None:
                     if old_pile.name[0] == "1" or old_pile.name == "side1":
-                        game.mouse_update(game.players[1],old_pile,pile_hover)
+                        move_available = game.mouse_update(game.players[1],old_pile, pile_hover)
+                        if move_available:
+                            start_new_thread(
+                                    time_out,
+                                    (game.players[1],game, images[move_available._peek().name], 
+                                    move_available._peek().pos)
+                                )
                     else:
-                         game.mouse_update(player,old_pile,pile_hover)
+                        move_available = game.mouse_update(player,old_pile, pile_hover)
+                        if move_available:
+                            start_new_thread(
+                                    time_out,
+                                    (player,game, images[move_available._peek().name], 
+                                    move_available._peek().pos)
+                                )
                 else:
                     if selected_card != None:
                         game.move_card(old_pile,old_pile)
@@ -450,7 +465,7 @@ def join_menu():
         pygame.display.flip()
 
 def change_setting(button:Setting_Button):
-    File = "rules.txt"
+    File = "textfiles/rules.txt"
     if button.input == "max_cards_for_joker":
         options = ["3","5","10","15"]
         i = options.index(button.key)
@@ -459,16 +474,16 @@ def change_setting(button:Setting_Button):
         else:
             new_value = options[i + 1]
     elif button.name == "Reset to Defaults":
-        with open("default.txt",'r') as file:
+        with open("textfiles/default.txt",'r') as file:
             data = file.readlines()
-        with open("rules.txt","w") as file:
+        with open("textfiles/rules.txt","w") as file:
             for line in data:
                 if line.strip() == "controls":
                     data = data[data.index(line) + 1:]
                     break
                 else:
                     file.write(line)
-        with open("controls.txt","w") as file:
+        with open("textfiles/controls.txt","w") as file:
             for line in data:
                     file.write(line)
     elif button.key == "True":
@@ -476,7 +491,7 @@ def change_setting(button:Setting_Button):
     elif button.key == "False":
         new_value = True
     else:
-        File = "controls.txt"
+        File = "textfiles/controls.txt"
         scr.empty()
         scr.set_screen("change_keybind_screen")
         run = True

@@ -29,7 +29,7 @@ class Player:
 
     def set_controls(self):
         controls = {}
-        with open("controls.txt",'r') as file:
+        with open("textfiles/controls.txt",'r') as file:
             for line in file:
                 input, value = line.strip().split(':',1)
                 controls[input.strip()] = value.strip()

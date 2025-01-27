@@ -10,21 +10,15 @@ idCount = 0
 
 def time_out(player : Player, card: Card, start_pos):
     player.timed_out = True
-    sleep(0.1)
-    card.pos = (card.pos[0] + 10,card.pos[1])
+    card.pos = (start_pos[0] + 10,start_pos[1])
+    sleep(0.05)
+    card.pos = (start_pos[0] - 10,start_pos[1])
+    sleep(0.05)
+    card.pos = (start_pos[0] + 10,start_pos[1])
+    sleep(0.05)
+    card.pos = (start_pos[0] - 10,start_pos[1])
     sleep(0.05)
     card.pos = start_pos
-    card.pos = (card.pos[0] - 10,card.pos[1])
-    sleep(0.05)
-    card.pos = start_pos
-    card.pos = (card.pos[0] + 10,card.pos[1])
-    sleep(0.05)
-    card.pos = start_pos
-    card.pos = (card.pos[0] - 10,card.pos[1])
-    sleep(0.05)
-    card.pos = start_pos
-    sleep(0.05)
-
     player.timed_out = False
 
 def threaded_client(conn, p, gameId):
@@ -52,7 +46,13 @@ def threaded_client(conn, p, gameId):
                                     old_pile = pile
                                 if data[semi_colon+1:] == pile.name:
                                     new_pile = pile
-                            game.mouse_update(player,old_pile,new_pile)
+                            move_available = game.mouse_update(player,old_pile, new_pile)
+                            if move_available:
+                                start_new_thread(
+                                        time_out,
+                                        (player, move_available._peek(), 
+                                        move_available._peek().pos)
+                                    )
                         elif data[0:6] == "return":
                             for pile in game.all_piles():
                                 if data[7:] == pile.name:
