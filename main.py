@@ -33,8 +33,8 @@ def get_pile_under_mouse(game: Game):
     """
     Get the pile under the mouse pointer.
     
-    This function checks if the mouse position is within the bounds
-    of any pile in the game and returns that pile.
+    This function checks if the mouse position is within the bounds of any
+    pile in the game and returns that pile.
     """
     x, y = pygame.Vector2(pygame.mouse.get_pos())
     
@@ -53,8 +53,8 @@ def time_out(player: Player, game: Game, card: Image, start_pos):
     """
     Handle player time-out animations.
     
-    The player's card is animated to move slightly and return
-    to the start position to visually indicate the time-out.
+    The player's card is animated to move slightly and return to the start
+    position to visually indicate the time-out.
     """
     player.timed_out = True
     for i in range(5):
@@ -71,8 +71,8 @@ def button_action(button):
     """
     Handle button click actions in the game menus.
     
-    Depending on the button clicked, different game modes or menus
-    are launched.
+    Depending on the button clicked, different game modes or menus are
+    launched.
     """
     text = button.name
     scr.empty()
@@ -108,34 +108,38 @@ def button_action(button):
         main_1_player(-1)
 
 def main_1_player(delay):
+    """
+    Run single player game
+
+    This function manages user inputs, changes to the game state and
+    displaying changes to the user
+
+    It also manages the AI opponent and its changes to the game
+    """
     # Initial setup
     run = True
     clock = pygame.time.Clock()
     game = Game(0)
     player = game.players[0]
-    scr.setup_game_screen(game,player)
+    selected_card = None
+    old_pile = None
 
-    # Determine opponent type based on delay
+    # Setup AI opponent
     if delay == -1:
         game.players[1] = AdaptiveOpponent(2000)
     else:
         game.players[1] = Opponent(delay)
 
-    # Initialize selected card and pile variables
-    selected_card = None
-    old_pile = None
-
-    # Custom events for AI move and AI flip
-    # AI flip occurs at a random set interval, allows AI to have "2 hands"
     AI_MOVE = pygame.USEREVENT + 1
-    AI_FLIP = pygame.USEREVENT + 2
+    AI_FLIP = pygame.USEREVENT + 2  # AI flip occurs at a random set interval, allows AI to have "2 hands"
     pygame.time.set_timer(AI_MOVE, game.players[1].delay)
     pygame.time.set_timer(
         AI_FLIP,
         game.players[1].delay // 2 + random.randint(10, 25) * 17
     )
 
-    # Create game sutes and start the game
+    # Create game display and start the game
+    scr.setup_game_screen(game,player)
     game.create_sprites()
     game.start_game()
 
@@ -155,7 +159,7 @@ def main_1_player(delay):
              menu()
              run = False
 
-        # Adjust AI timers if delay changes
+        # Adjust adaptive AI timers 
         if game.players[1].delay != delay:
             pygame.time.set_timer(AI_MOVE, game.players[1].delay)
             pygame.time.set_timer(
@@ -164,23 +168,24 @@ def main_1_player(delay):
             )
             delay = game.players[1].delay
 
-        # Event handling
+
         for event in pygame.event.get():
+
             if event.type == KEYDOWN:
+                #Handle pausing
                 if event.key == K_ESCAPE:
-                    # Handle pause menu
                     game.paused = True
                     run = paused_screen(game,images,player)
                     game.paused = False
                 else:
+                    #Send move to game
                     if not player.timed_out:
-                        #Pile only returned if an invalid move was made
-                        pile = game.keyboard_update(player, event.unicode)
-                        if pile:
+                        move_hint_pile = game.keyboard_update(player, event.unicode.lower())
+                        if move_hint_pile:  #Hint only returned if an invalid move was made. Timeout started
                             start_new_thread(
                                 time_out,
-                                (player, game, images[pile._peek().name], 
-                                pile._peek().pos)
+                                (player, game, images[move_hint_pile._peek().name], 
+                                move_hint_pile._peek().pos)
                             )
 
             if event.type == AI_FLIP:
@@ -200,16 +205,16 @@ def main_1_player(delay):
             if event.type == MOUSEBUTTONUP:
                 #Move card on release
                 if pile_hover and old_pile:
-                    move_available = game.mouse_update(player,old_pile, pile_hover)
-                    if move_available:
+                    move_hint_pile = game.mouse_update(player,old_pile, pile_hover)
+                    if move_hint_pile: #Hint only returned if an invalid move was made. Timeout started 
                         start_new_thread(
                                 time_out,
-                                (player,game, images[move_available._peek().name], 
-                                move_available._peek().pos)
+                                (player,game, images[move_hint_pile._peek().name], 
+                                move_hint_pile._peek().pos)
                             )
-                else:
-                    if selected_card:
-                        game.move_card(old_pile, old_pile)
+                elif selected_card:
+                    game.move_card(old_pile, old_pile)
+                    
                 selected_card = None
                 old_pile = None
 
@@ -217,108 +222,153 @@ def main_1_player(delay):
         scr.game_display(game,images,selected_card,player)
         pygame.display.flip()
 
-    # Return to main menu at the end
+    # Return to main menu after end/quit 
     scr.set_screen("main_menu")
 
 def main_2_player():
+    """
+    Run two player game
+
+    This function manages user inputs, changes to the game state and
+    displaying changes to the user
+
+    It also differentiates between two users inputs on the same devices
+    """
     run = True
     clock = pygame.time.Clock()
     game = Game(0)
     player = game.players[0]
-    scr.setup_game_screen(game,player)
     selected_card = None
     old_pile = None
     
+    # Create game display and start the game
+    scr.setup_game_screen(game,player)
     game.create_sprites()
     game.start_game()
+    
+    #load images for cards
     for card in game.deck.contents:
         images[card.name] = Image(card)
-    images["red_joker"] = Image(Joker((99,"J")))
+    images["red_joker"] = Image(Joker((99, "J")))
+    
+    #Main game loop
     while run:
         pile_hover = get_pile_under_mouse(game)
         clock.tick(60)
+        
+        #Check for winner
         if game.winner:
-             scr.set_winner_screen(player,game.winner,"2_player_win_card")
-             menu()
-             run = False
-
+            scr.set_winner_screen(player, game.winner, "2_player_win_card")
+            menu()
+            run = False
+        
 
         for event in pygame.event.get():
             if event.type == KEYDOWN:
+                #Handle pausing
                 if event.key == K_ESCAPE:
                     game.paused = True
-                    run = paused_screen(game,images,"2player")
+                    run = paused_screen(game, images, "2player")
                     game.paused = False
                 else:
-                    if event.unicode not in player.inputs:
-                        player = game.players[abs(player.id -1)]
+                    #Change which player made the move based of input
+                    if event.unicode.lower() not in player.inputs:
+                        player = game.players[abs(player.id - 1)]
+                    
+                    #Send move to game
                     if not player.timed_out:
-                        #Pile only returned if an invalid move was made
-                        pile = game.keyboard_update(player, event.unicode)
-                        if pile:
+                        move_hint_pile = game.keyboard_update(player, event.unicode.lower())
+                        if move_hint_pile:  #Hint only returned if an invalid move was made. Timeout started
                             start_new_thread(
                                 time_out,
-                                (player, game, images[pile._peek().name], 
-                                pile._peek().pos)
+                                (
+                                    player, game, images[move_hint_pile._peek().name],
+                                    move_hint_pile._peek().pos
+                                )
                             )
-
+            
             elif event.type == QUIT:
                 run = False
-            if event.type == MOUSEBUTTONDOWN:
-                if pile_hover != None:
+            
+            elif event.type == MOUSEBUTTONDOWN:
+                #Select card on click
+                if pile_hover:
                     selected_card = pile_hover._peek()
                     old_pile = pile_hover
-            if event.type == MOUSEBUTTONUP:
-                if pile_hover != None and old_pile != None:
+            
+            elif event.type == MOUSEBUTTONUP:
+                #Move card on release
+                if pile_hover and old_pile:
                     if old_pile.name[0] == "1" or old_pile.name == "side1":
-                        move_available = game.mouse_update(game.players[1],old_pile, pile_hover)
-                        if move_available:
-                            start_new_thread(
-                                    time_out,
-                                    (game.players[1],game, images[move_available._peek().name], 
-                                    move_available._peek().pos)
-                                )
+                        move_hint_pile = game.mouse_update(game.players[1], old_pile, pile_hover)
                     else:
-                        move_available = game.mouse_update(player,old_pile, pile_hover)
-                        if move_available:
-                            start_new_thread(
-                                    time_out,
-                                    (player,game, images[move_available._peek().name], 
-                                    move_available._peek().pos)
-                                )
-                else:
-                    if selected_card != None:
-                        game.move_card(old_pile,old_pile)
+                        move_hint_pile = game.mouse_update(player, old_pile, pile_hover)
+                    
+                    if move_hint_pile:  #Hint only returned if an invalid move was made. Timeout started
+                        start_new_thread(
+                            time_out,
+                            (
+                                player if old_pile.name[0] != "1" else game.players[1],
+                                game, images[move_hint_pile._peek().name],
+                                move_hint_pile._peek().pos
+                            )
+                        )
+                
+                elif selected_card:
+                    game.move_card(old_pile, old_pile)
+                
                 selected_card = None
                 old_pile = None
-        scr.game_display(game,images,selected_card,"2player")
-
+        
+        #Update display
+        scr.game_display(game, images, selected_card, "2player")
         pygame.display.flip()
+    
+    #Return to main menu after end/quit
     scr.set_screen("main_menu")
-     
+
+
 def main_online(HostIP):
-    game : Game
+    """
+    Run online game.
+
+    This function manages sending requests to server, receiving the game
+    state and displaying changes to the user
+    """
+    game: Game
     run = True
     clock = pygame.time.Clock()
     n = Network()
-    if HostIP == "Host":
-        run_server_script()
-    ip = n.set_ip(HostIP)
-    player = n.getP()
     selected_card = None
     old_pile = None
+
+    #Set IP for connection
+    if HostIP == "Host":
+        #Runs server on host device
+        run_server_script()
+
+    ip = n.set_ip(HostIP)
+    player = n.getP()
+    
+    #Establish connection and receive game
     try:
         game = n.send("get")
+        
         for card in game.deck.contents:
             images[card.name] = Image(card)
-            images["red_joker"] = Image(Joker((99,"J")))
-        scr.setup_game_screen(game,player)
-    except:
-        return False
-
-    while run:
         
+        images["red_joker"] = Image(Joker((99, "J")))
+        scr.setup_game_screen(game, player)
+    
+    except:
+        #Exit and return False if no connection established
+        return False
+    
+    #Main game loop
+    while run:
         clock.tick(60)
+        
+        #Handle lost connection to the server. Displays online quit screen
         try:
             game = n.send("get")
         except:
@@ -326,114 +376,160 @@ def main_online(HostIP):
             scr.set_screen("online_quit")
             menu()
             break
-        if game.ready == False:
+        
+        
+        if not game.ready:
+            #Display waiting screen until player 2 joins
             if player.id == 0:
                 scr.set_screen("waiting_for_game")
-                scr.add_screen_objects([Text(ip,40).centre_abt((SCREEN_WIDTH//2,20))])
-
+                scr.add_screen_objects([Text(ip, 40).centre_abt((SCREEN_WIDTH // 2, 20))])
+            
+            #Display player 2 screen until ready to start
             elif player.id == 1:
                 scr.set_screen("press_to_start")
-
+            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
-                if event.type == KEYDOWN: 
+                
+                elif event.type == KEYDOWN:
+                    #Quit
                     if event.key == K_ESCAPE:
                         run = False
                     else:
-                        n.send(event.unicode)
+                        #Send input to start game to server
+                        n.send(event.unicode.lower())
+            
             scr.screen_display()
-        elif game.paused == True:
+        
+        #Pause game if opponent pauses
+        elif game.paused:
             scr.set_screen("oppenent_paused")
+            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
-                if event.type == KEYDOWN: 
-                    pass
-            scr.game_display(game,images,None,player)
+            
+            scr.game_display(game, images, None, player)
+        
+            #Normal game loop
+        
         else:
+            #Remove all previous screen objects
             if not scr.is_current_screen(""):
                 scr.empty()
+            
             pile_hover = get_pile_under_mouse(game)
-
+            
+            #Check for winner
             if game.winner:
-                scr.set_winner_screen(player,game.winner,"win_card")
+                scr.set_winner_screen(player, game.winner, "win_card")
                 menu()
                 run = False
-
+            
             for event in pygame.event.get():
 
-                if event.type == KEYDOWN: # Timeoutes online to be done server side
+                if event.type == KEYDOWN:
+                    #Handle pausing
                     if event.key == K_ESCAPE:
                         n.send("pause")
-                        run = paused_screen(game,images,player)
+                        run = paused_screen(game, images, player)
                         n.send("pause")
                     else:
-                        n.send(event.unicode)
+                        #Send move to server
+                        n.send(event.unicode.lower())
+                
                 elif event.type == QUIT:
                     run = False
-                if event.type == MOUSEBUTTONDOWN: 
+                
+                elif event.type == MOUSEBUTTONDOWN:
+                    #Select card on click
                     if pile_hover:
                         selected_card = pile_hover._peek()
                         old_pile = pile_hover
-                if event.type == MOUSEBUTTONUP:
-                    if pile_hover   and old_pile :
-                        n.send("mouse_update:"+old_pile.name+";"+pile_hover.name)
-                    else:
-                        if selected_card:
-                            n.send("return:"+old_pile.name)
+                
+                elif event.type == MOUSEBUTTONUP:
+                    #Send mouse move to server
+                    if pile_hover and old_pile:
+                        n.send(f"mouse_update:{old_pile.name};{pile_hover.name}")
+                    
+                    elif selected_card:
+                        n.send(f"return:{old_pile.name}")
+                    
                     selected_card = None
                     old_pile = None
-                    
-        
-                    
-            scr.game_display(game,images,selected_card,player)
-        pygame.display.flip()
-    scr.set_screen("main_menu")
-    return True
 
-def paused_screen(game:Game,images,display_player):
+            #update game screen
+            scr.game_display(game, images, selected_card, player)
+        pygame.display.flip()
+    
+    #Return to main menu after end/quit
+    scr.set_screen("main_menu") 
+    return True 
+
+
+def paused_screen(game: Game, images, display_player):
+    """Display pause screen and allow user to quit game"""
     run = True
     clock = pygame.time.Clock()
     scr.set_screen("paused")
+    
     while run:
         clock.tick(60)
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+            
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
-                   scr.empty()
-                   return True
+                    scr.empty()
+                    #Returns back to game
+                    return True
+            
+            #Decide which button is pressed on mouse click
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
+                
                 for button in scr.buttons:
                     if button.click(pos):
                         if button.name == "Resume":
+                            #Returns back to game
                             scr.empty()
                             return True
                         elif button.name == "Quit":
+                            #Quits game
                             scr.empty()
                             return False
         
-        scr.game_display(game,images,None,display_player)
+        #Updates screen
+        scr.game_display(game, images, None, display_player)
         pygame.display.flip()
 
+
 def join_menu():
+    """
+    Screen which allows the user to enter an IP and attmept to connect.
+    This can be done as many times until valid
+    """
     scr.empty()
     run = True
     clock = pygame.time.Clock()
     ip_valid = False
     text = ""
-    while ip_valid == False:
+    
+    #Ensuring correct IP
+    while not ip_valid:
         clock.tick(60)
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+            
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     if scr.is_current_screen("main_menu"):
@@ -441,108 +537,163 @@ def join_menu():
                     else:
                         scr.set_screen("main_menu")
                         menu()
+
+                #Try to connect with IP. If fails, display error message to
+                #screen
+                elif event.key in [K_RETURN, K_KP_ENTER]:
+                    ip_valid = main_online(text)
+                    
+                    if not ip_valid:
+                        text = ""
+                        invalid_text = Text("Server with this IP does not exist", 60)
+                        invalid_text.set_pos(SCREEN_WIDTH // 2 - invalid_text.width // 2, SCREEN_HEIGHT // 2 - invalid_text.height // 2 - 200)
+                        scr.texts.add(invalid_text)
+
+                #Takes users IP input as text               
                 elif event.key == K_BACKSPACE:
                     text = text[:-1]
-                elif event.key == K_RETURN or event.key == K_KP_ENTER:
-                    ip_valid = main_online(text) #this can be made better
-                    if ip_valid == False:
-                        text = ""
-                        invalid_text = Text("Server with this IP does not exist",60)
-                        invalid_text.set_pos(SCREEN_WIDTH//2-invalid_text.width//2,SCREEN_HEIGHT//2 - invalid_text.height//2 - 200)
-                        scr.texts.add(invalid_text)
-                    else:
-                        ip_valid = True
                 elif event.key == K_SPACE or event.unicode == "":
                     pass
                 else:
-                    text += event.unicode
-
-       
+                    text += event.unicode.lower()
+        
+        #Update display with typed text
         scr.screen_display()
-        typed = Text("IP:"+text,80).centre_abt((SCREEN_WIDTH//2,SCREEN_HEIGHT//2))
+        typed = Text("IP:" + text, 80).centre_abt((SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         typed.draw(scr.win)
-
+        
         pygame.display.flip()
 
-def change_setting(button:Setting_Button):
-    File = "textfiles/rules.txt"
+
+def change_setting(button: Setting_Button):
+    """
+    Change settings
+    
+    This function takes the setting button pressed as a paramater and makes
+    changes to either the rules or controls accordingly
+    """
+    #Iterate through options for the maximum number of cards, in a hand,
+    #required for a joker round
     if button.input == "max_cards_for_joker":
-        options = ["3","5","10","15"]
+        options = ["3", "5", "10", "15"]
         i = options.index(button.key)
-        if i== 3:
-            new_value = options[0]
-        else:
-            new_value = options[i + 1]
+        new_value = options[0] if i == 3 else options[i + 1]
+        edited_file = "textfiles/rules.txt"
+    
+    #Toggles boolean settings 
+    elif button.key == "True":
+        new_value = False
+        edited_file = "textfiles/rules.txt"
+    elif button.key == "False":
+        new_value = True
+        edited_file = "textfiles/rules.txt"
+    
+    #Resets all settings files values to the default file values
     elif button.name == "Reset to Defaults":
-        with open("textfiles/default.txt",'r') as file:
+        with open("textfiles/default.txt", 'r') as file:
             data = file.readlines()
-        with open("textfiles/rules.txt","w") as file:
+        
+        with open("textfiles/rules.txt", "w") as file:
             for line in data:
-                if line.strip() == "controls":
+                #The string controls is used as a divider between rules and
+                #controls
+                if line.strip() == "controls": 
                     data = data[data.index(line) + 1:]
                     break
                 else:
                     file.write(line)
-        with open("textfiles/controls.txt","w") as file:
+        
+        with open("textfiles/controls.txt", "w") as file:
             for line in data:
-                    file.write(line)
-    elif button.key == "True":
-        new_value = False
-    elif button.key == "False":
-        new_value = True
+                file.write(line)
+        edited_file = None
+    
+    #Changes keybind
     else:
-        File = "textfiles/controls.txt"
-        scr.empty()
-        scr.set_screen("change_keybind_screen")
+        edited_file = "textfiles/controls.txt"
         run = True
         clock = pygame.time.Clock()
+
+        #Changes to set keybind screen
+        scr.empty()
+        scr.set_screen("change_keybind_screen")
+
+        #Waits for a new input to change it to
         while run:
             clock.tick(60)
+            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
+                
                 if event.type == KEYDOWN:
-                    new_value = event.unicode
+                    new_value = event.unicode.lower()
                     run = False
             
             scr.screen_display()
             pygame.display.flip()
-
+    
+    #Rewite edited file
+    if edited_file:
+        with open(edited_file, 'r') as file:
+            data = file.readlines()
         
-    with open(File,'r') as file:
-        data = file.readlines()
-    with open(File,"w") as file:
-        for line in data:
-            if button.line == line:
-                input, value = line.strip().split(':',1)
-                file.write(input + ":"+ str(new_value) + "\n")
-            else:
-                file.write(line)
+        with open(edited_file, "w") as file:
+            for line in data:
+                if button.line == line:
+                    input, value = line.strip().split(':', 1)
+                    file.write(input + ":" + str(new_value) + "\n")
+                else:
+                    file.write(line)
+    
+    #Redraw settings screen
     scr.set_screen("settings")
-        
+
+
 def menu():
+    """
+    A default template for menus
+
+    Each menu has its own objects, texts and buttons which are loaded
+    before the function is called
+
+    This function displays all objects and, on click, checks if any button
+    has been clicked
+
+    """
     run = True
     clock = pygame.time.Clock()
+    
     while run:
         clock.tick(60)
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+            
+            #Handle quits
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     if scr.is_current_screen("main_menu"):
                         exit()
                     else:
                         scr.set_screen("main_menu")
+            
+            #Check for a button being pressed
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
+                
                 for button in scr.buttons:
                     if button.click(pos):
                         button_action(button)
         
+        #Update display
         scr.screen_display()
         pygame.display.flip()
+
+
+#Main program starts
 scr.set_screen("main_menu")
-menu() 
+menu()
