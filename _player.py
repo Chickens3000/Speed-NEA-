@@ -10,18 +10,9 @@ class Player:
         
         if self.id == 0:
             #Create player 1s piles
-            self.hand = [
-                Pile(f"{id}-{i}", 8, 
-                     ((SCREEN_WIDTH // 2 - 450 - CARD_WIDTH // 2 + 225 * i),
-                      (SCREEN_HEIGHT - CARD_HEIGHT - 30))) 
-                for i in range(5)
-            ]
+            self.hand = [Pile(f"{id}-{i}", 8, ((SCREEN_WIDTH // 2 - 450 - CARD_WIDTH // 2 + 225 * i),(SCREEN_HEIGHT - CARD_HEIGHT - 30))) for i in range(5)]
 
-            self.side_pile = Pile(
-                f"side{id}", 36, 
-                (SCREEN_WIDTH // 2 - (450 + CARD_WIDTH // 2), 
-                 SCREEN_HEIGHT - 2 * CARD_HEIGHT - 2 * 30)
-            )
+            self.side_pile = Pile(f"side{id}", 36, (SCREEN_WIDTH // 2 - (450 + CARD_WIDTH // 2), SCREEN_HEIGHT - 2 * CARD_HEIGHT - 2 * 30))
 
             self.cards = Pile(f"{id}cards", 52, (1300, 800))
             
@@ -34,15 +25,9 @@ class Player:
             ]
         else:
             #Create player 2s piles
-            self.hand = [Pile(f"{id}-{i}", 8, 
-                     ((SCREEN_WIDTH // 2 - 450 - CARD_WIDTH // 2 + 225 * i), 10)) 
-                     for i in range(5)]
+            self.hand = [Pile(f"{id}-{i}", 8, ((SCREEN_WIDTH // 2 - 450 - CARD_WIDTH // 2 + 225 * i), 10)) for i in range(5)]
 
-            self.side_pile = Pile(
-                f"side{id}", 36, 
-                (SCREEN_WIDTH // 2 + (450 - CARD_WIDTH // 2), 
-                 SCREEN_HEIGHT - 2 * CARD_HEIGHT - 2 * 30)
-            )
+            self.side_pile = Pile(f"side{id}", 36, (SCREEN_WIDTH // 2 + (450 - CARD_WIDTH // 2), SCREEN_HEIGHT - 2 * CARD_HEIGHT - 2 * 30))
 
             self.cards = Pile(f"{id}cards", 52, (1300, -100))
             
@@ -117,7 +102,7 @@ class AdaptiveOpponent(Opponent):
         elif no_cards <= 20:
             self.delay += 500
         elif no_cards <= 10:
-            self.delay += 700
+            self.delay += 800
         
         #Gradually increases delay over time
         self.delay += (100 * (self.round_number // 3))

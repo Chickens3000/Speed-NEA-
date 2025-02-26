@@ -133,10 +133,7 @@ def main_1_player(delay):
     AI_MOVE = pygame.USEREVENT + 1
     AI_FLIP = pygame.USEREVENT + 2  # AI flip occurs at a random set interval, allows AI to have "2 hands"
     pygame.time.set_timer(AI_MOVE, game.players[1].delay)
-    pygame.time.set_timer(
-        AI_FLIP,
-        game.players[1].delay // 2 + random.randint(10, 25) * 17
-    )
+    pygame.time.set_timer(AI_FLIP,game.players[1].delay // 2 + random.randint(10, 25) * 17)
 
     # Create game display and start the game
     scr.setup_game_screen(game,player)

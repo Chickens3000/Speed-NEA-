@@ -25,16 +25,10 @@ class Display:
         self.screens = {
             "main_menu": {
                 "buttons": [
-                    Button("Singleplayer", 
-                           (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 120), 
-                           80),
-                    Button("2 Player", 
-                           (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2), 
-                           80),
+                    Button("Singleplayer", (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 120), 80),
+                    Button("2 Player", (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2), 80),
                     Button("Settings", (160, SCREEN_HEIGHT - 80), 60),
-                    Button("How to Play", (
-                        SCREEN_WIDTH - 220, SCREEN_HEIGHT - 80), 
-                        60),
+                    Button("How to Play", (SCREEN_WIDTH - 220, SCREEN_HEIGHT - 80), 60),
                 ],
             },
             "two_player_menu": {
@@ -265,31 +259,25 @@ class Display:
                                                     game.players[1].side_pile.pos[1]),
 
             "2player_slam": [Input_Button(game.players[0].inputs[5] + "/" + game.players[1].inputs[5],
-                                           (game.center_piles[0].pos[0] + CARD_WIDTH // 2, 
-                                            game.center_piles[0].pos[1] + CARD_HEIGHT),
-                                           50),
+                                          (game.center_piles[0].pos[0] + CARD_WIDTH // 2, game.center_piles[0].pos[1] + CARD_HEIGHT),
+                                          50),
                               Input_Button(game.players[0].inputs[6] + "/" + game.players[1].inputs[6],
-                                           (game.center_piles[1].pos[0] + CARD_WIDTH // 2, 
-                                            game.center_piles[1].pos[1] + CARD_HEIGHT),
+                                           (game.center_piles[1].pos[0] + CARD_WIDTH // 2, game.center_piles[1].pos[1] + CARD_HEIGHT),
                                            50)],
 
             "slam": [Input_Button(display_player.inputs[5],
-                                  (game.center_piles[0].pos[0] + CARD_WIDTH // 2, 
-                                   game.center_piles[0].pos[1] + CARD_HEIGHT),
+                                  (game.center_piles[0].pos[0] + CARD_WIDTH // 2, game.center_piles[0].pos[1] + CARD_HEIGHT),
                                   50),
                      Input_Button(display_player.inputs[6],
-                                  (game.center_piles[1].pos[0] + CARD_WIDTH // 2, 
-                                   game.center_piles[1].pos[1] + CARD_HEIGHT),
+                                  (game.center_piles[1].pos[0] + CARD_WIDTH // 2, game.center_piles[1].pos[1] + CARD_HEIGHT),
                                   50)],
 
             "player1_controls": [Input_Button(game.players[0].inputs[i],
-                                              (game.players[0].hand[i].pos[0] + CARD_WIDTH // 2, 
-                                               game.players[0].hand[i].pos[1] + CARD_HEIGHT),
+                                              (game.players[0].hand[i].pos[0] + CARD_WIDTH // 2, game.players[0].hand[i].pos[1] + CARD_HEIGHT),
                                               30) for i in range(len(game.players[0].hand))],
 
             "player2_controls": [Input_Button(game.players[1].inputs[i],
-                                              (game.players[1].hand[i].pos[0] + CARD_WIDTH // 2, 
-                                               game.players[1].hand[i].pos[1] + CARD_HEIGHT),
+                                              (game.players[1].hand[i].pos[0] + CARD_WIDTH // 2, game.players[1].hand[i].pos[1] + CARD_HEIGHT),
                                               30) for i in range(len(game.players[1].hand))]
         }
 
